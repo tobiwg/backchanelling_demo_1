@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAC Backchanneling App</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Styling for circular button layout */
+        .circle-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            max-width: 300px;
+            margin: 20px auto;
+            gap: 15px;
+        }
+        .circle-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+        }
+        #responseDisplay {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center">AAC Backchanneling App</h2>
+
+        <!-- Circular Buttons Layout -->
+        <div class="circle-container">
+            <button class="circle-btn bg-primary" id="btn1" data-response="Quick Tap Response">Uh-huh</button>
+            <button class="circle-btn bg-success" id="btn2" data-response="Double-Tap Response">Yeah</button>
+            <button class="circle-btn bg-info" id="btn3" data-response="Soft Response">Mmm</button>
+            <button class="circle-btn bg-warning" id="btn4" data-response="Neutral Response">Oh really</button>
+            <button class="circle-btn bg-danger" id="btn5" data-response="Enthusiastic Response">Amazing</button>
+            <button class="circle-btn bg-secondary" id="btn6" data-response="Holding Response">Totally agree</button>
+            <button class="circle-btn bg-dark" id="btn7" data-response="Swipe Response">Yep</button>
+        </div>
+
+        <!-- Display the response text -->
+        <div id="responseDisplay">Response: None</div>
+    </div>
+
+    <!-- Bootstrap and JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
