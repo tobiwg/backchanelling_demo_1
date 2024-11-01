@@ -35,6 +35,16 @@
             font-size: 18px;
             font-weight: bold;
         }
+        /* Add pressed effect on button click */
+        .circle-btn {
+            transition: transform 0.1s ease, box-shadow 0.1s ease; /* Smooth transition */
+        }
+
+        .circle-btn.pressed {
+            transform: scale(0.9); /* Shrink slightly on press */
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* Add a shadow effect */
+        }
+
         /* Increase button sizes on larger screens */
         @media (min-width: 768px) {
             .circle-btn {
