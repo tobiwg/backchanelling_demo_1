@@ -34,7 +34,7 @@ function playResponseAudio(filePath) {
 function triggerResponse(responseText) {
     responseDisplay.textContent = `Response: ${responseText}`;
     console.log(`Triggered: ${responseText}`);
-    if (responses[responseText]) {
+    if (responses[responseText] && !isPlaying) {
         playResponseAudio(responses[responseText]);
     }
 }
@@ -44,7 +44,9 @@ touchArea.addEventListener('touchstart', (e) => {
     touchStartTime = Date.now();
     responseDisplay.textContent = "Response: None";
     holdTimer = setTimeout(() => {
-        triggerResponse('Holding Response');
+        if(!isPlayin){
+            triggerResponse('Holding Response');
+        }
     }, 600); // Longer hold for intense response
 });
 
@@ -56,9 +58,13 @@ touchArea.addEventListener('touchend', (e) => {
         // Quick Tap Response
         const currentTime = Date.now();
         if (currentTime - lastTapTime < 300) {
+            if(!isPlayin){
             triggerResponse('Double-Tap Response');
+            }
         } else {
+            if(!isPlayin){
             triggerResponse('Quick Tap Response');
+            }
         }
         lastTapTime = currentTime;
     }
@@ -66,6 +72,7 @@ touchArea.addEventListener('touchend', (e) => {
 
 touchArea.addEventListener('touchmove', (e) => {
     const touch = e.touches[0];
+    if(!isPlayin){
     if (touch.clientX < window.innerWidth / 3) {
         triggerResponse('Soft Response');
     } else if (touch.clientX > (2 * window.innerWidth) / 3) {
@@ -73,4 +80,5 @@ touchArea.addEventListener('touchmove', (e) => {
     } else {
         triggerResponse('Neutral Response');
     }
+}
 });
