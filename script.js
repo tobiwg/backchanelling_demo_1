@@ -6,6 +6,10 @@ let lastTapTime = 0;
 document.addEventListener('gesturestart', function (e) {
     e.preventDefault();
 });
+// Disable scrolling.
+document.ontouchmove = function (e) {
+    e.preventDefault();
+  }
 // Function to handle force-sensitive touch response
 function handleForceTouch(force) {
     if (force < 0.2) {
