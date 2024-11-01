@@ -60,30 +60,31 @@ touchArea.addEventListener('touchstart', (e) => {
 });
 
 touchArea.addEventListener('touchend', (e) => {
-    const touchDuration = Date.now() - touchStartTime;
     clearTimeout(holdTimer); // Stop hold timer if touch ends early
 
+    const touchDuration = Date.now() - touchStartTime;
+
+    // Only process taps if the touch was quick enough
     if (touchDuration < 300) {
         const currentTime = Date.now();
-
-        // Allow a brief delay for double-tap detection
-        setTimeout(() => {
-            if (currentTime - lastTapTime < 500) {
-                if (!isPlaying) { // Only trigger if no audio is playing
-                    triggerResponse('Double-Tap Response');
-                }
-            } else {
-                if (!isPlaying) { // Only trigger if no audio is playing
-                    triggerResponse('Quick Tap Response');
-                }
+        if (currentTime - lastTapTime < 500) {
+            // If within 300ms, it's a double tap
+            if (!isPlaying) { // Only trigger if no audio is playing
+                triggerResponse('Double-Tap Response');
             }
-            lastTapTime = currentTime;
-        }, 500); // Delay for quick tap to allow double-tap recognition
+        } else {
+            // Otherwise, it's a quick tap
+            if (!isPlaying) { // Only trigger if no audio is playing
+                triggerResponse('Quick Tap Response');
+            }
+        }
+        lastTapTime = currentTime; // Update the last tap time
     }
 });
 
 touchArea.addEventListener('touchmove', (e) => {
     const touch = e.touches[0];
+    // Prevent triggering audio on touchmove
     if (!isPlaying) { // Only trigger if no audio is playing
         if (touch.clientX < window.innerWidth / 3) {
             triggerResponse('Soft Response');
