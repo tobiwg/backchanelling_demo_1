@@ -1,41 +1,22 @@
 const touchArea = document.getElementById('touchArea');
 const responseDisplay = document.getElementById('responseDisplay');
-const elevenLabsApiKey = 'sk_b0c43ae4baabf9a6672340bfb34dbc3fd581e17295c19467'; // Replace with your ElevenLabs API key
-const voice_id = 'TX3LPaxmHKxFdv7VOQHJ'; // Replace with your chosen ElevenLabs voice ID
 let touchStartTime = 0;
 let holdTimer = null;
 let lastTapTime = 0;
 
-// Predefined responses with corresponding audio phrases
+// Define response audio paths
 const responses = {
-    "Quick Tap Response": "uh-huh",
-    "Double-Tap Response": "yeah",
-    "Soft Response": "mmm",
-    "Neutral Response": "oh really",
-    "Enthusiastic Response": "that's amazing",
-    "Holding Response": "totally agree"
+    "Quick Tap Response": "sound/uh-huh.mp3",
+    "Double-Tap Response": "sound/yeah.mp3",
+    "Soft Response": "sound/mmm.mp3",
+    "Neutral Response": "sound/oh really.mp3",
+    "Enthusiastic Response": "sound/that's amazing.mp3",
+    "Holding Response": "sound/totally agree.mp3"
 };
 
-// Function to handle ElevenLabs API TTS request
-async function playResponseAudio(text) {
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'xi-api-key': elevenLabsApiKey
-        },
-        body: JSON.stringify({
-            text,
-            voice_settings: {
-                stability: 0.5, // Adjust as needed
-                similarity_boost: 0.75 // Adjust as needed
-            }
-        })
-    });
-    
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
+// Function to play the corresponding audio file
+function playResponseAudio(filePath) {
+    const audio = new Audio(filePath);
     audio.play();
 }
 
