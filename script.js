@@ -29,26 +29,23 @@ function triggerResponse(responseText) {
     }
 }
 
-// Touch event listeners for Force Touch (if available) and fallback gestures
+// Touch event listeners
 touchArea.addEventListener('touchstart', (e) => {
     touchStartTime = Date.now();
     responseDisplay.textContent = "Response: None";
+    
+    // Start hold timer for holding response
     holdTimer = setTimeout(() => {
         triggerResponse('Holding Response');
     }, 600);
-
-    if (e.touches[0].force !== undefined) {
-        touchArea.addEventListener('touchforcechange', (event) => {
-            handleForceTouch(event.touches[0].force);
-        });
-    }
 });
 
 touchArea.addEventListener('touchend', (e) => {
     const touchDuration = Date.now() - touchStartTime;
-    clearTimeout(holdTimer);
+    clearTimeout(holdTimer); // Stop hold timer if touch ends early
 
-    if (touchDuration < 300 && !e.touches[0].force) {
+    // Check if it’s a quick tap or double-tap
+    if (touchDuration < 300) {
         const currentTime = Date.now();
         if (currentTime - lastTapTime < 300) {
             triggerResponse('Double-Tap Response');
