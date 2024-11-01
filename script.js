@@ -43,27 +43,28 @@ function triggerResponse(responseText) {
 touchArea.addEventListener('touchstart', (e) => {
     touchStartTime = Date.now();
     responseDisplay.textContent = "Response: None";
+    
+    // Start hold timer for holding response
     holdTimer = setTimeout(() => {
-        if(!isPlayin){
+        if (!isPlaying) {  // Only trigger if no audio is playing
             triggerResponse('Holding Response');
         }
-    }, 600); // Longer hold for intense response
+    }, 600); // 600ms for holding response
 });
 
 touchArea.addEventListener('touchend', (e) => {
     const touchDuration = Date.now() - touchStartTime;
-    clearTimeout(holdTimer);
+    clearTimeout(holdTimer); // Stop hold timer if touch ends early
 
     if (touchDuration < 300) {
-        // Quick Tap Response
         const currentTime = Date.now();
         if (currentTime - lastTapTime < 300) {
-            if(!isPlayin){
-            triggerResponse('Double-Tap Response');
+            if (!isPlaying) { // Only trigger if no audio is playing
+                triggerResponse('Double-Tap Response');
             }
         } else {
-            if(!isPlayin){
-            triggerResponse('Quick Tap Response');
+            if (!isPlaying) { // Only trigger if no audio is playing
+                triggerResponse('Quick Tap Response');
             }
         }
         lastTapTime = currentTime;
@@ -72,13 +73,13 @@ touchArea.addEventListener('touchend', (e) => {
 
 touchArea.addEventListener('touchmove', (e) => {
     const touch = e.touches[0];
-    if(!isPlayin){
-    if (touch.clientX < window.innerWidth / 3) {
-        triggerResponse('Soft Response');
-    } else if (touch.clientX > (2 * window.innerWidth) / 3) {
-        triggerResponse('Enthusiastic Response');
-    } else {
-        triggerResponse('Neutral Response');
+    if (!isPlaying) { // Only trigger if no audio is playing
+        if (touch.clientX < window.innerWidth / 3) {
+            triggerResponse('Soft Response');
+        } else if (touch.clientX > (2 * window.innerWidth) / 3) {
+            triggerResponse('Enthusiastic Response');
+        } else {
+            triggerResponse('Neutral Response');
+        }
     }
-}
 });
