@@ -6,19 +6,18 @@
     <title>AAC Backchanneling App</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Styling for circular button layout */
         .circle-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
             margin: 20px auto;
-            max-width: 100%; /* Allow container to be full width */
+            max-width: 100%;
         }
         .circle-btn {
-            width: 100%; /* Full width within each column */
+            width: 100%;
             height: 100px;
-            max-width: 120px; /* Maximum size for larger screens */
+            max-width: 120px;
             max-height: 120px;
             border-radius: 50%;
             display: flex;
@@ -35,17 +34,13 @@
             font-size: 18px;
             font-weight: bold;
         }
-        /* Add pressed effect on button click */
         .circle-btn {
-            transition: transform 0.1s ease, box-shadow 0.1s ease; /* Smooth transition */
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
-
         .circle-btn.pressed {
-            transform: scale(0.9); /* Shrink slightly on press */
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* Add a shadow effect */
+            transform: scale(0.9);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
         }
-
-        /* Increase button sizes on larger screens */
         @media (min-width: 768px) {
             .circle-btn {
                 height: 120px;
@@ -58,8 +53,6 @@
 <body>
     <div class="container">
         <h2 class="text-center">AAC Backchanneling App</h2>
-
-        <!-- Responsive Grid for Circular Buttons -->
         <div class="row circle-container">
             <div class="col-4 col-sm-3 col-md-2 text-center">
                 <button class="circle-btn bg-primary" id="btn1" data-response="Quick Tap Response">Uh-huh</button>
@@ -79,23 +72,22 @@
             <div class="col-4 col-sm-3 col-md-2 text-center">
                 <button class="circle-btn bg-secondary" id="btn6" data-response="Holding Response">Agree</button>
             </div>
-            
         </div>
-                <!-- Volume Control Buttons -->
-                <h4 class="text-center mt-4">Choose Volume Control Function</h4>
-                <div class="btn-group d-flex justify-content-center mb-4">
-                    <button id="linearButton" class="btn btn-primary mx-1">Linear</button>
-                    <button id="exponentialButton" class="btn btn-secondary mx-1">Exponential</button>
-                    <button id="sigmoidButton" class="btn btn-success mx-1">Sigmoid</button>
-                    <button id="sineButton" class="btn btn-warning mx-1">Sine Wave</button>
-                </div>
-        
+
+        <!-- Volume Control Buttons -->
+        <h4 class="text-center mt-4">Choose Volume Control Function</h4>
+        <div class="btn-group d-flex justify-content-center mb-4">
+            <button id="linearButton" class="btn btn-primary mx-1">Linear</button>
+            <button id="exponentialButton" class="btn btn-secondary mx-1">Exponential</button>
+            <button id="sigmoidButton" class="btn btn-success mx-1">Sigmoid</button>
+            <button id="sineButton" class="btn btn-warning mx-1">Sine Wave</button>
+        </div>
 
         <!-- Display the response text -->
         <div id="responseDisplay">Response: None</div>
     </div>
 
-    <!-- Bootstrap and JavaScript -->
+    <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>
