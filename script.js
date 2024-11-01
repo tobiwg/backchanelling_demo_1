@@ -1,49 +1,61 @@
-
-import { ElevenLabsClient, play } from "elevenlabs";
-
-const elevenlabs = new ElevenLabsClient({
-    apiKey: "sk_b0c43ae4baabf9a6672340bfb34dbc3fd581e17295c19467", // Defaults to process.env.ELEVENLABS_API_KEY
-});
-
-const audio = await elevenlabs.generate({
-    voice: "Sarah",
-    text: "Hello! 你好! Hola! नमस्ते! Bonjour! こんにちは! مرحبا! 안녕하세요! Ciao! Cześć! Привіт! வணக்கம்!",
-    model_id: "eleven_multilingual_v2",
-});
-
-
 const touchArea = document.getElementById('touchArea');
 const responseDisplay = document.getElementById('responseDisplay');
+const elevenLabsApiKey = 'sk_b0c43ae4baabf9a6672340bfb34dbc3fd581e17295c19467'; // Replace with your ElevenLabs API key
+const voice_id = 'TX3LPaxmHKxFdv7VOQHJ'; // Replace with your chosen ElevenLabs voice ID
 let touchStartTime = 0;
 let holdTimer = null;
 let lastTapTime = 0;
-document.addEventListener('gesturestart', function (e) {
-    e.preventDefault();
-});
-// Disable scrolling.
-document.ontouchmove = function (e) {
-    e.preventDefault();
-  }
-// Function to handle force-sensitive touch response
-function handleForceTouch(force) {
-    if (force < 0.2) {
-        triggerResponse('Light Touch Response');
-    } else if (force < 0.5) {
-        triggerResponse('Medium Force Response');
-    } else {
-        triggerResponse('Strong Force Response');
+
+// Predefined responses with corresponding audio phrases
+const responses = {
+    "Quick Tap Response": "uh-huh",
+    "Double-Tap Response": "yeah",
+    "Soft Response": "mmm",
+    "Neutral Response": "oh really",
+    "Enthusiastic Response": "that's amazing",
+    "Holding Response": "totally agree"
+};
+
+// Function to handle ElevenLabs API TTS request
+async function playResponseAudio(text) {
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'xi-api-key': elevenLabsApiKey
+        },
+        body: JSON.stringify({
+            text,
+            voice_settings: {
+                stability: 0.5, // Adjust as needed
+                similarity_boost: 0.75 // Adjust as needed
+            }
+        })
+    });
+    
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    audio.play();
+}
+
+// Function to trigger a response and play audio
+function triggerResponse(responseText) {
+    responseDisplay.textContent = `Response: ${responseText}`;
+    console.log(`Triggered: ${responseText}`);
+    if (responses[responseText]) {
+        playResponseAudio(responses[responseText]);
     }
 }
 
-// Add force touch event if available
+// Touch event listeners for Force Touch (if available) and fallback gestures
 touchArea.addEventListener('touchstart', (e) => {
     touchStartTime = Date.now();
     responseDisplay.textContent = "Response: None";
-    holdTimer = setTimeout(async () => {
+    holdTimer = setTimeout(() => {
         triggerResponse('Holding Response');
-        await play(audio);
-    }, 600); // Longer hold for intense response
-    
+    }, 600);
+
     if (e.touches[0].force !== undefined) {
         touchArea.addEventListener('touchforcechange', (event) => {
             handleForceTouch(event.touches[0].force);
@@ -66,7 +78,6 @@ touchArea.addEventListener('touchend', (e) => {
     }
 });
 
-// Handle sliding across screen
 touchArea.addEventListener('touchmove', (e) => {
     const touch = e.touches[0];
     if (touch.clientX < window.innerWidth / 3) {
@@ -77,10 +88,3 @@ touchArea.addEventListener('touchmove', (e) => {
         triggerResponse('Neutral Response');
     }
 });
-
-// Function to trigger a response
-function triggerResponse(responseText) {
-    responseDisplay.textContent = `Response: ${responseText}`;
-    console.log(`Triggered: ${responseText}`);
-    // Add sound or visual feedback here if desired
-}
