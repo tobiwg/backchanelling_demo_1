@@ -12,19 +12,20 @@
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
-            max-width: 300px;
             margin: 20px auto;
-            gap: 15px;
+            max-width: 100%; /* Allow container to be full width */
         }
         .circle-btn {
-            width: 80px;
-            height: 80px;
+            width: 100%; /* Full width within each column */
+            height: 100px;
+            max-width: 120px; /* Maximum size for larger screens */
+            max-height: 120px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             border: none;
         }
@@ -34,21 +35,41 @@
             font-size: 18px;
             font-weight: bold;
         }
+        /* Increase button sizes on larger screens */
+        @media (min-width: 768px) {
+            .circle-btn {
+                height: 120px;
+                max-height: 150px;
+                font-size: 18px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2 class="text-center">AAC Backchanneling App</h2>
 
-        <!-- Circular Buttons Layout -->
-        <div class="circle-container">
-            <button class="circle-btn bg-primary" id="btn1" data-response="Quick Tap Response">Uh-huh</button>
-            <button class="circle-btn bg-success" id="btn2" data-response="Double-Tap Response">Yeah</button>
-            <button class="circle-btn bg-info" id="btn3" data-response="Soft Response">Mmm</button>
-            <button class="circle-btn bg-warning" id="btn4" data-response="Neutral Response">Oh really</button>
-            <button class="circle-btn bg-danger" id="btn5" data-response="Enthusiastic Response">Amazing</button>
-            <button class="circle-btn bg-secondary" id="btn6" data-response="Holding Response">Totally agree</button>
-            <button class="circle-btn bg-dark" id="btn7" data-response="Swipe Response">Yep</button>
+        <!-- Responsive Grid for Circular Buttons -->
+        <div class="row circle-container">
+            <div class="col-4 col-sm-3 col-md-2 text-center">
+                <button class="circle-btn bg-primary" id="btn1" data-response="Quick Tap Response">Uh-huh</button>
+            </div>
+            <div class="col-4 col-sm-3 col-md-2 text-center">
+                <button class="circle-btn bg-success" id="btn2" data-response="Double-Tap Response">Yeah</button>
+            </div>
+            <div class="col-4 col-sm-3 col-md-2 text-center">
+                <button class="circle-btn bg-info" id="btn3" data-response="Soft Response">Mmm</button>
+            </div>
+            <div class="col-4 col-sm-3 col-md-2 text-center">
+                <button class="circle-btn bg-warning" id="btn4" data-response="Neutral Response">Oh really</button>
+            </div>
+            <div class="col-4 col-sm-3 col-md-2 text-center">
+                <button class="circle-btn bg-danger" id="btn5" data-response="Enthusiastic Response">Amazing</button>
+            </div>
+            <div class="col-4 col-sm-3 col-md-2 text-center">
+                <button class="circle-btn bg-secondary" id="btn6" data-response="Holding Response">Agree</button>
+            </div>
+            
         </div>
 
         <!-- Display the response text -->
