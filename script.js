@@ -33,6 +33,7 @@ touchArea.addEventListener('touchstart', (e) => {
         // minimum pressure vs. maximum pressure could result in
         // different handling of the user's input.
         console.log(`targetTouches[${i}].force = ${e.targetTouches[i].force}`);
+        triggerResponse(`targetTouches[${i}].force = ${e.targetTouches[i].force}`);
       }
     if (e.touches[0].force !== undefined) {
         touchArea.addEventListener('touchforcechange', (event) => {
