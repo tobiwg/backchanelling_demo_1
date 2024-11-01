@@ -67,7 +67,7 @@ touchArea.addEventListener('touchend', (e) => {
     // Only process taps if the touch was quick enough
     if (touchDuration < 300) {
         const currentTime = Date.now();
-        if (currentTime - lastTapTime < 500) {
+        if (currentTime - lastTapTime < 800) {
             // If within 300ms, it's a double tap
             if (!isPlaying) { // Only trigger if no audio is playing
                 triggerResponse('Double-Tap Response');
