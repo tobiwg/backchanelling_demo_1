@@ -48,7 +48,8 @@
                 font-size: 18px;
             }
         }
-        /* Add active state style for the selected volume function button */
+
+        /* Add active state style for the selected function button */
         .active-function {
             outline: 3px solid #333;
             outline-offset: -3px;
@@ -88,6 +89,15 @@
             <button id="exponentialButton" class="btn btn-secondary mx-1">Exponential</button>
             <button id="sigmoidButton" class="btn btn-success mx-1">Sigmoid</button>
             <button id="sineButton" class="btn btn-warning mx-1">Sine Wave</button>
+        </div>
+
+        <!-- Pitch Control Buttons -->
+        <h4 class="text-center mt-4">Choose Pitch Control Function</h4>
+        <div class="btn-group d-flex justify-content-center mb-4">
+            <button id="linearPitchButton" class="btn btn-primary mx-1">Linear</button>
+            <button id="exponentialPitchButton" class="btn btn-secondary mx-1">Exponential</button>
+            <button id="sigmoidPitchButton" class="btn btn-success mx-1">Sigmoid</button>
+            <button id="sinePitchButton" class="btn btn-warning mx-1">Sine Wave</button>
         </div>
 
         <!-- Display the response text -->
