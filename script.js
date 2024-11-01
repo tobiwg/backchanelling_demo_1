@@ -28,7 +28,12 @@ touchArea.addEventListener('touchstart', (e) => {
     holdTimer = setTimeout(() => {
         triggerResponse('Holding Response');
     }, 600); // Longer hold for intense response
-
+    for (let i = 0; i < e.targetTouches.length; i++) {
+        // Add code to "switch" based on the force value. For example
+        // minimum pressure vs. maximum pressure could result in
+        // different handling of the user's input.
+        console.log(`targetTouches[${i}].force = ${e.targetTouches[i].force}`);
+      }
     if (e.touches[0].force !== undefined) {
         touchArea.addEventListener('touchforcechange', (event) => {
             handleForceTouch(event.touches[0].force);
