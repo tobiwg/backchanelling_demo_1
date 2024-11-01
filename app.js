@@ -15,7 +15,7 @@ function exponential(t) { return t * t; }
 function sigmoid(t, midpoint = 0.5, steepness = 10) {
     return 1 / (1 + Math.exp(-steepness * (t - midpoint)));
 }
-function sineWave(t) { return (Math.sin(2 * Math.PI * t) + 1) / 2; }
+function sineWave(t) { return (Math.sin(10* Math.PI * t) + 1) / 2; }
 
 // Set Volume Function based on Selected Option
 document.getElementById("linearButton").onclick = () => selectedFunction = "linear";
