@@ -3,6 +3,7 @@ const responseDisplay = document.getElementById('responseDisplay');
 let touchStartTime = 0;
 let holdTimer = null;
 let lastTapTime = 0;
+let isPlaying = false; // Flag to track audio playback
 
 // Define response audio paths
 const responses = {
@@ -16,8 +17,17 @@ const responses = {
 
 // Function to play the corresponding audio file
 function playResponseAudio(filePath) {
+    if (isPlaying) return; // Exit if audio is still playing
+
     const audio = new Audio(filePath);
+    isPlaying = true; // Set flag to true when playback starts
+    
     audio.play();
+    
+    // Set flag to false once audio finishes
+    audio.onended = () => {
+        isPlaying = false;
+    };
 }
 
 // Function to trigger a response and play audio
@@ -33,19 +43,17 @@ function triggerResponse(responseText) {
 touchArea.addEventListener('touchstart', (e) => {
     touchStartTime = Date.now();
     responseDisplay.textContent = "Response: None";
-    
-    // Start hold timer for holding response
     holdTimer = setTimeout(() => {
         triggerResponse('Holding Response');
-    }, 600);
+    }, 600); // Longer hold for intense response
 });
 
 touchArea.addEventListener('touchend', (e) => {
     const touchDuration = Date.now() - touchStartTime;
-    clearTimeout(holdTimer); // Stop hold timer if touch ends early
+    clearTimeout(holdTimer);
 
-    // Check if it’s a quick tap or double-tap
     if (touchDuration < 300) {
+        // Quick Tap Response
         const currentTime = Date.now();
         if (currentTime - lastTapTime < 300) {
             triggerResponse('Double-Tap Response');
