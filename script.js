@@ -1,3 +1,17 @@
+
+import { ElevenLabsClient, play } from "elevenlabs";
+
+const elevenlabs = new ElevenLabsClient({
+    apiKey: "sk_b0c43ae4baabf9a6672340bfb34dbc3fd581e17295c19467", // Defaults to process.env.ELEVENLABS_API_KEY
+});
+
+const audio = await elevenlabs.generate({
+    voice: "Sarah",
+    text: "Hello! 你好! Hola! नमस्ते! Bonjour! こんにちは! مرحبا! 안녕하세요! Ciao! Cześć! Привіт! வணக்கம்!",
+    model_id: "eleven_multilingual_v2",
+});
+
+
 const touchArea = document.getElementById('touchArea');
 const responseDisplay = document.getElementById('responseDisplay');
 let touchStartTime = 0;
@@ -25,16 +39,11 @@ function handleForceTouch(force) {
 touchArea.addEventListener('touchstart', (e) => {
     touchStartTime = Date.now();
     responseDisplay.textContent = "Response: None";
-    holdTimer = setTimeout(() => {
+    holdTimer = setTimeout(async () => {
         triggerResponse('Holding Response');
+        await play(audio);
     }, 600); // Longer hold for intense response
-    for (let i = 0; i < e.targetTouches.length; i++) {
-        // Add code to "switch" based on the force value. For example
-        // minimum pressure vs. maximum pressure could result in
-        // different handling of the user's input.
-        console.log(`targetTouches[${i}].force = ${e.targetTouches[i].force}`);
-        triggerResponse(`targetTouches[${i}].force = ${e.targetTouches[i].force}`);
-      }
+    
     if (e.touches[0].force !== undefined) {
         touchArea.addEventListener('touchforcechange', (event) => {
             handleForceTouch(event.touches[0].force);
