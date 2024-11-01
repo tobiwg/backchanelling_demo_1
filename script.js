@@ -68,7 +68,7 @@ touchArea.addEventListener('touchend', (e) => {
 
         // Allow a brief delay for double-tap detection
         setTimeout(() => {
-            if (currentTime - lastTapTime < 300) {
+            if (currentTime - lastTapTime < 500) {
                 if (!isPlaying) { // Only trigger if no audio is playing
                     triggerResponse('Double-Tap Response');
                 }
@@ -78,7 +78,7 @@ touchArea.addEventListener('touchend', (e) => {
                 }
             }
             lastTapTime = currentTime;
-        }, 100); // Delay for quick tap to allow double-tap recognition
+        }, 500); // Delay for quick tap to allow double-tap recognition
     }
 });
 

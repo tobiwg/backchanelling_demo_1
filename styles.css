@@ -12,8 +12,8 @@ position: fixed;
 }
 
 .touch-area {
-    width: 80%;
-    height: 200px;
+    width: 426px;
+    height: 426px;
     background-color: #ececec;
     border: 2px solid #ccc;
     display: flex;
