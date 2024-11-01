@@ -22,8 +22,15 @@ function playResponseAudio(filePath) {
     const audio = new Audio(filePath);
     isPlaying = true; // Set flag to true when playback starts
     
-    audio.play();
-    
+    audio.play()
+        .then(() => {
+            console.log("Audio played successfully");
+        })
+        .catch(error => {
+            console.error("Playback failed:", error); // Catch the NotAllowedError here
+            isPlaying = false; // Reset if playback fails
+        });
+
     // Set flag to false once audio finishes
     audio.onended = () => {
         isPlaying = false;
@@ -43,7 +50,7 @@ function triggerResponse(responseText) {
 touchArea.addEventListener('touchstart', (e) => {
     touchStartTime = Date.now();
     responseDisplay.textContent = "Response: None";
-    
+
     // Start hold timer for holding response
     holdTimer = setTimeout(() => {
         if (!isPlaying) {  // Only trigger if no audio is playing
@@ -58,16 +65,20 @@ touchArea.addEventListener('touchend', (e) => {
 
     if (touchDuration < 300) {
         const currentTime = Date.now();
-        if (currentTime - lastTapTime < 300) {
-            if (!isPlaying) { // Only trigger if no audio is playing
-                triggerResponse('Double-Tap Response');
+
+        // Allow a brief delay for double-tap detection
+        setTimeout(() => {
+            if (currentTime - lastTapTime < 300) {
+                if (!isPlaying) { // Only trigger if no audio is playing
+                    triggerResponse('Double-Tap Response');
+                }
+            } else {
+                if (!isPlaying) { // Only trigger if no audio is playing
+                    triggerResponse('Quick Tap Response');
+                }
             }
-        } else {
-            if (!isPlaying) { // Only trigger if no audio is playing
-                triggerResponse('Quick Tap Response');
-            }
-        }
-        lastTapTime = currentTime;
+            lastTapTime = currentTime;
+        }, 100); // Delay for quick tap to allow double-tap recognition
     }
 });
 
