@@ -20,6 +20,10 @@ let volumePoints = [];
 let pitchPoints = [];
 let audioDuration = 0; // Variable to hold audio duration
 
+// Set canvas width based on the parent element
+volumeCanvas.width = volumeCanvas.offsetWidth;
+pitchCanvas.width = pitchCanvas.offsetWidth;
+
 // Function to play audio response
 function playResponseAudio(audioUrl) {
     if (isPlaying) return;
@@ -78,80 +82,81 @@ pitchCanvas.addEventListener('mousemove', (e) => {
 
 // Function to add points to the profile and redraw
 function addPoint(points, x, y, canvas, duration) {
-    // Normalize x based on audio duration and max points
-    const scaledX = Math.floor((x / canvas.width) * 100); // Scale to 100 points
-    if (!points[scaledX]) {
-        points[scaledX] = y; // Save y coordinate for the given x
-        drawProfile(points, canvas.getContext('2d'));
+    const pointX = Math.floor((x / canvas.width) * 100); // Scale x to 100 points
+    const pointY = Math.floor((1 - (y / canvas.height)) * 100); // Invert y and scale
+    points[pointX] = pointY; // Store point
+
+    drawCanvas(points, canvas); // Draw the updated points
+
+    if (duration > 0) {
+        const volumeFactor = getVolumeFactor(volumePoints);
+        const pitchFactor = getPitchFactor(pitchPoints);
+        applyProfileToAudio(volumeFactor, pitchFactor); // Apply profiles to audio
     }
 }
 
-// Function to draw the profile
-function drawProfile(points, ctx) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Clear the canvas
+// Function to draw the current points on the canvas
+function drawCanvas(points, canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
     ctx.beginPath();
-    points.forEach((y, x) => {
-        if (y !== undefined) {
-            const scaledY = ctx.canvas.height - y; // Flip y to fit canvas
-            ctx.lineTo(x * (ctx.canvas.width / 100), scaledY);
+    ctx.moveTo(0, canvas.height); // Start from the bottom left
+
+    for (let i = 0; i < points.length; i++) {
+        if (points[i] !== undefined) {
+            ctx.lineTo(i * (canvas.width / 100), canvas.height - (points[i] / 100) * canvas.height);
         }
-    });
-    ctx.strokeStyle = 'blue';
-    ctx.lineWidth = 2;
+    }
+
+    ctx.lineTo(canvas.width, canvas.height); // Close the path
+    ctx.fillStyle = "rgba(0, 0, 255, 0.5)"; // Fill with a color
+    ctx.fill();
     ctx.stroke();
 }
 
-// Function to get volume factor from points
+// Function to calculate volume factor from points
 function getVolumeFactor(points) {
-    // Calculate average of y values or get a default value
-    const values = points.filter(y => y !== undefined);
-    if (values.length > 0) {
-        return Math.min(1, Math.max(0, Math.max(...values) / volumeCanvas.height));
-    }
-    return 1; // Default to full volume
+    // Normalize to [0, 1] based on the maximum point
+    const maxVolume = Math.max(...points.filter(p => p !== undefined), 1);
+    return Math.min(1, maxVolume / 100); // Return a value between 0 and 1
 }
 
-// Handle Button Clicks
-document.querySelectorAll('.circle-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const response = this.getAttribute('data-response');
-        document.getElementById('responseDisplay').innerText = `Response: ${response}`;
-        playResponseAudio(responses[response]);
-    });
+// Function to calculate pitch factor from points
+function getPitchFactor(points) {
+    // Normalize to [0, 1] based on the maximum point
+    const maxPitch = Math.max(...points.filter(p => p !== undefined), 1);
+    return Math.min(1, maxPitch / 100); // Return a value between 0 and 1
+}
 
-    // Add pressed state for visual feedback
-    btn.addEventListener('mousedown', function() {
-        this.classList.add('pressed');
-    });
-    btn.addEventListener('mouseup', function() {
-        this.classList.remove('pressed');
-    });
+// Function to apply drawn profiles to audio playback
+function applyProfileToAudio(volumeFactor, pitchFactor) {
+    // This function should apply the volumeFactor and pitchFactor to the audio source
+    console.log(`Volume Factor: ${volumeFactor}, Pitch Factor: ${pitchFactor}`);
+}
+
+// Button event listeners for playing responses
+$('.circle-btn').on('mousedown', function() {
+    const responseText = $(this).data('response');
+    $('#responseDisplay').text('Response: ' + responseText);
+    $(this).addClass('pressed'); // Add pressed effect
 });
 
-// Apply button functionality
-document.getElementById('linearButton').onclick = () => setActiveVolumeFunction("linear");
-document.getElementById('exponentialButton').onclick = () => setActiveVolumeFunction("exponential");
-document.getElementById('sigmoidButton').onclick = () => setActiveVolumeFunction("sigmoid");
-document.getElementById('sineButton').onclick = () => setActiveVolumeFunction("sine");
+$('.circle-btn').on('mouseup', function() {
+    $(this).removeClass('pressed'); // Remove pressed effect
+    const responseText = $(this).data('response');
+    playResponseAudio(responses[responseText]); // Play audio for the selected response
+});
 
-document.getElementById('linearPitchButton').onclick = () => setActivePitchFunction("linear");
-document.getElementById('exponentialPitchButton').onclick = () => setActivePitchFunction("exponential");
-document.getElementById('sigmoidPitchButton').onclick = () => setActivePitchFunction("sigmoid");
-document.getElementById('sinePitchButton').onclick = () => setActivePitchFunction("sine");
+// Button event listeners for volume function selection
+$('.btn-group > button').on('click', function() {
+    $('.btn-group > button').removeClass('active-function'); // Remove active class from all buttons
+    $(this).addClass('active-function'); // Add active class to the clicked button
+    selectedVolumeFunction = $(this).attr('id').replace('Button', '').toLowerCase(); // Set the selected function
+});
 
-// Functions for setting active volume and pitch functions
-function setActiveVolumeFunction(func) {
-    selectedVolumeFunction = func;
-    document.querySelectorAll('.btn-group .btn').forEach(button => {
-        button.classList.remove('active-function');
-    });
-    document.getElementById(func.toLowerCase() + 'Button').classList.add('active-function');
-}
-
-function setActivePitchFunction(func) {
-    selectedPitchFunction = func;
-    document.querySelectorAll('.btn-group .btn').forEach(button => {
-        button.classList.remove('active-function');
-    });
-    document.getElementById(func.toLowerCase() + 'PitchButton').classList.add('active-function');
-}
+// Button event listeners for pitch function selection
+$('.btn-group > button').on('click', function() {
+    $('.btn-group > button').removeClass('active-function'); // Remove active class from all buttons
+    $(this).addClass('active-function'); // Add active class to the clicked button
+    selectedPitchFunction = $(this).attr('id').replace('Button', '').toLowerCase(); // Set the selected function
+});
