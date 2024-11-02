@@ -52,7 +52,9 @@ function playResponseAudio(audioUrl) {
                 } else {
                     // Interpolate volume
                     const volumeFactor = interpolateProfile(volumePoints, volumeTimes, currentTime);
-                    gainNode.gain.setValueAtTime(volumeFactor, audioContext.currentTime); // Apply interpolated volume
+                    if (volumeFactor !== undefined && isFinite(volumeFactor)) {
+                        gainNode.gain.setValueAtTime(volumeFactor, audioContext.currentTime); // Apply interpolated volume
+                    }
                 }
             }, 100); // Update every 100ms
 
@@ -80,8 +82,8 @@ function interpolateProfile(points, times, currentTime) {
         }
     }
 
-    // If no valid index, return the first point
-    if (index < 0) return points[0] / 100;
+    // If no valid index, return the first point if available, else return 0
+    if (index < 0) return points[0] ? points[0] / 100 : 0;
 
     // If we are at the last point or beyond, return the last point
     if (index >= points.length - 1) return points[points.length - 1] / 100;
@@ -139,7 +141,7 @@ function addPoint(points, times, x, y, canvas, audioDuration) {
     const currentTime = (pointX / 100) * audioDuration; // Map to audio time
 
     // Ensure we don't overwrite existing points on the same x value
-    if (!points[pointX]) {
+    if (pointX < 100 && (points[pointX] === undefined || times[pointX] === undefined)) {
         points[pointX] = pointY; // Store point
         times[pointX] = currentTime; // Store corresponding time
     }
