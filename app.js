@@ -20,8 +20,10 @@ volumeCanvas.width = volumeCanvas.offsetWidth;
 pitchCanvas.width = pitchCanvas.offsetWidth;
 
 // Arrays to hold volume and pitch points
-let volumePoints = new Array(100).fill(0);
-let pitchPoints = new Array(100).fill(0);
+let volumePoints = [];
+let pitchPoints = [];
+let volumeTimes = [];
+let pitchTimes = [];
 
 // Function to play audio response
 function playResponseAudio(audioUrl) {
@@ -41,18 +43,16 @@ function playResponseAudio(audioUrl) {
             gainNode.connect(audioContext.destination);
             source.start(0);
 
-            // Update volume and pitch based on profiles every 100ms
+            // Update volume based on profiles every 100ms
             const updateAudioProfile = setInterval(() => {
                 const currentTime = audioContext.currentTime;
                 if (currentTime >= audioDuration) {
                     clearInterval(updateAudioProfile);
                     isPlaying = false;
                 } else {
-                    // Interpolate volume and pitch
-                    const volumeFactor = interpolateProfile(volumePoints, currentTime, audioDuration);
+                    // Interpolate volume
+                    const volumeFactor = interpolateProfile(volumePoints, volumeTimes, currentTime);
                     gainNode.gain.setValueAtTime(volumeFactor, audioContext.currentTime); // Apply interpolated volume
-                    // If you need to adjust pitch, apply it here as well
-                    // Example: source.playbackRate.setValueAtTime(pitchFactor, audioContext.currentTime);
                 }
             }, 100); // Update every 100ms
 
@@ -64,22 +64,40 @@ function playResponseAudio(audioUrl) {
 }
 
 // Interpolate profile function
-function interpolateProfile(points, currentTime, duration) {
-    const percentage = currentTime / duration; // Get the time percentage of the audio
-    const index = Math.floor(percentage * (points.length - 1)); // Calculate index based on percentage
+function interpolateProfile(points, times, currentTime) {
+    if (points.length === 0) return 0; // If no points, return 0
 
-    if (index < 0 || index >= points.length - 1) {
-        return points[index] / 100; // Return the volume factor between 0 and 1
+    // Normalize currentTime to a value between 0 and audioDuration
+    const normalizedTime = (currentTime / audioDuration) * 100; // Scale to 0-100
+
+    // Find the index of the last point that is less than or equal to normalizedTime
+    let index = -1;
+    for (let i = 0; i < times.length; i++) {
+        if (times[i] <= normalizedTime) {
+            index = i;
+        } else {
+            break;
+        }
     }
 
-    // Get the next point to interpolate
-    const nextIndex = Math.min(index + 1, points.length - 1);
-    const pointValue = points[index] / 100; // Scale to 0-1
-    const nextPointValue = points[nextIndex] / 100; // Scale to 0-1
+    // If no valid index, return the first point
+    if (index < 0) return points[0] / 100;
 
-    // Interpolate linearly between the two points
-    const pointRatio = (percentage * (points.length - 1)) - index; // Fractional distance between points
-    return pointValue + (nextPointValue - pointValue) * pointRatio; // Linear interpolation
+    // If we are at the last point or beyond, return the last point
+    if (index >= points.length - 1) return points[points.length - 1] / 100;
+
+    // Interpolate between the two points
+    const nextIndex = index + 1;
+    const startValue = points[index] / 100; // Scale to 0-1
+    const endValue = points[nextIndex] / 100; // Scale to 0-1
+    const startTime = times[index];
+    const endTime = times[nextIndex];
+
+    const duration = endTime - startTime;
+    const position = normalizedTime - startTime;
+
+    // Linear interpolation
+    return startValue + (endValue - startValue) * (position / duration);
 }
 
 // Add mouse event listeners for volume canvas
@@ -87,7 +105,7 @@ volumeCanvas.addEventListener('mousedown', (e) => {
     const rect = volumeCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    addPoint(volumePoints, x, y, volumeCanvas, audioDuration);
+    addPoint(volumePoints, volumeTimes, x, y, volumeCanvas, audioDuration);
 });
 
 volumeCanvas.addEventListener('mousemove', (e) => {
@@ -95,7 +113,7 @@ volumeCanvas.addEventListener('mousemove', (e) => {
     const rect = volumeCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    addPoint(volumePoints, x, y, volumeCanvas, audioDuration);
+    addPoint(volumePoints, volumeTimes, x, y, volumeCanvas, audioDuration);
 });
 
 // Add mouse event listeners for pitch canvas
@@ -103,7 +121,7 @@ pitchCanvas.addEventListener('mousedown', (e) => {
     const rect = pitchCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    addPoint(pitchPoints, x, y, pitchCanvas, audioDuration);
+    addPoint(pitchPoints, pitchTimes, x, y, pitchCanvas, audioDuration);
 });
 
 pitchCanvas.addEventListener('mousemove', (e) => {
@@ -111,14 +129,20 @@ pitchCanvas.addEventListener('mousemove', (e) => {
     const rect = pitchCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    addPoint(pitchPoints, x, y, pitchCanvas, audioDuration);
+    addPoint(pitchPoints, pitchTimes, x, y, pitchCanvas, audioDuration);
 });
 
 // Function to add points to the profile and redraw
-function addPoint(points, x, y, canvas, duration) {
+function addPoint(points, times, x, y, canvas, audioDuration) {
     const pointX = Math.floor((x / canvas.width) * 100); // Scale x to 100 points
     const pointY = Math.floor((1 - (y / canvas.height)) * 100); // Invert y and scale
-    points[pointX] = pointY; // Store point
+    const currentTime = (pointX / 100) * audioDuration; // Map to audio time
+
+    // Ensure we don't overwrite existing points on the same x value
+    if (!points[pointX]) {
+        points[pointX] = pointY; // Store point
+        times[pointX] = currentTime; // Store corresponding time
+    }
 
     drawCanvas(points, canvas); // Draw the updated points
 }
