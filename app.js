@@ -69,7 +69,7 @@ function playResponseAudio(audioUrl) {
 // Function to get the volume for the current time based on points
 function getVolumeForCurrentTime(currentTime) {
     const numPoints = volumePoints.length;
-
+    console.log(numPoints)
     if (numPoints === 0) return 0; // If no points, return 0
 
     // Calculate duration per point
