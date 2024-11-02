@@ -39,12 +39,47 @@ function playResponseAudio(audioUrl) {
             audioDuration = buffer.duration; // Store audio duration
             source.connect(gainNode);
             gainNode.connect(audioContext.destination);
-            gainNode.gain.value = getVolumeFactor(volumePoints); // Apply drawn volume profile
             source.start(0);
+
+            // Update volume and pitch based on profiles every 100ms
+            const updateAudioProfile = setInterval(() => {
+                const currentTime = audioContext.currentTime;
+                if (currentTime >= audioDuration) {
+                    clearInterval(updateAudioProfile);
+                    isPlaying = false;
+                } else {
+                    // Interpolate volume and pitch
+                    const volumeFactor = interpolateProfile(volumePoints, currentTime, audioDuration);
+                    gainNode.gain.setValueAtTime(volumeFactor, audioContext.currentTime); // Apply interpolated volume
+                    // If you need to adjust pitch, apply it here as well
+                    // Example: source.playbackRate.setValueAtTime(pitchFactor, audioContext.currentTime);
+                }
+            }, 100); // Update every 100ms
+
             source.onended = () => {
                 isPlaying = false;
+                clearInterval(updateAudioProfile);
             };
         });
+}
+
+// Interpolate profile function
+function interpolateProfile(points, currentTime, duration) {
+    const percentage = currentTime / duration; // Get the time percentage of the audio
+    const index = Math.floor(percentage * (points.length - 1)); // Calculate index based on percentage
+
+    if (index < 0 || index >= points.length - 1) {
+        return points[index] / 100; // Return the volume factor between 0 and 1
+    }
+
+    // Get the next point to interpolate
+    const nextIndex = Math.min(index + 1, points.length - 1);
+    const pointValue = points[index] / 100; // Scale to 0-1
+    const nextPointValue = points[nextIndex] / 100; // Scale to 0-1
+
+    // Interpolate linearly between the two points
+    const pointRatio = (percentage * (points.length - 1)) - index; // Fractional distance between points
+    return pointValue + (nextPointValue - pointValue) * pointRatio; // Linear interpolation
 }
 
 // Add mouse event listeners for volume canvas
@@ -86,12 +121,6 @@ function addPoint(points, x, y, canvas, duration) {
     points[pointX] = pointY; // Store point
 
     drawCanvas(points, canvas); // Draw the updated points
-
-    if (duration > 0) {
-        const volumeFactor = getVolumeFactor(volumePoints);
-        const pitchFactor = getPitchFactor(pitchPoints);
-        applyProfileToAudio(volumeFactor, pitchFactor); // Apply profiles to audio
-    }
 }
 
 // Function to draw the current points on the canvas
@@ -111,24 +140,6 @@ function drawCanvas(points, canvas) {
     ctx.fillStyle = "rgba(0, 0, 255, 0.5)"; // Fill with a color
     ctx.fill();
     ctx.stroke();
-}
-
-// Function to calculate volume factor from points
-function getVolumeFactor(points) {
-    const maxVolume = Math.max(...points.filter(p => p !== undefined), 1);
-    return Math.min(1, maxVolume / 100); // Return a value between 0 and 1
-}
-
-// Function to calculate pitch factor from points
-function getPitchFactor(points) {
-    const maxPitch = Math.max(...points.filter(p => p !== undefined), 1);
-    return Math.min(1, maxPitch / 100); // Return a value between 0 and 1
-}
-
-// Function to apply drawn profiles to audio playback
-function applyProfileToAudio(volumeFactor, pitchFactor) {
-    // This function should apply the volumeFactor and pitchFactor to the audio source
-    console.log(`Volume Factor: ${volumeFactor}, Pitch Factor: ${pitchFactor}`);
 }
 
 // Button event listeners for playing responses
