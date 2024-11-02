@@ -1,5 +1,7 @@
 let isPlaying = false;
 let audioDuration = 0; // Variable to hold audio duration
+let volumeValues = []; // Array to hold precomputed volume values
+let pitchValues = []; // Array to hold precomputed pitch values
 const responses = {
     "Quick Tap Response": "sound/uh-huh.mp3",
     "Double-Tap Response": "sound/yeah.mp3",
@@ -37,27 +39,30 @@ function playResponseAudio(audioUrl) {
         .then(buffer => {
             source.buffer = buffer;
             audioDuration = buffer.duration; // Store audio duration
+
+            // Precompute volume and pitch values
+            precomputeValues();
+
             source.connect(gainNode);
             gainNode.connect(audioContext.destination);
             source.start(0);
 
-            // Update volume and pitch based on profiles every 100ms
+            let playbackStartTime = audioContext.currentTime; // Store the time when playback starts
             const updateAudioProfile = setInterval(() => {
-                const currentTime = audioContext.currentTime;
+                const currentTime = audioContext.currentTime - playbackStartTime;
                 if (currentTime >= audioDuration) {
                     clearInterval(updateAudioProfile);
                     isPlaying = false;
                 } else {
-                    // Apply interpolated volume
-                    const volumeFactor = getVolumeForCurrentTime(currentTime);
-                    if (volumeFactor !== undefined && isFinite(volumeFactor)) {
-                        gainNode.gain.setValueAtTime(volumeFactor, audioContext.currentTime); // Apply interpolated volume
+                    // Use precomputed values
+                    if (currentTime < volumeValues.length) {
+                        const volumeFactor = volumeValues[Math.floor(currentTime)];
+                        gainNode.gain.setValueAtTime(volumeFactor, audioContext.currentTime);
                     }
 
-                    // Apply interpolated pitch
-                    const pitchFactor = getPitchForCurrentTime(currentTime);
-                    if (pitchFactor !== undefined && isFinite(pitchFactor)) {
-                        source.playbackRate.setValueAtTime(pitchFactor, audioContext.currentTime); // Apply interpolated pitch
+                    if (currentTime < pitchValues.length) {
+                        const pitchFactor = pitchValues[Math.floor(currentTime)];
+                        source.playbackRate.setValueAtTime(pitchFactor, audioContext.currentTime);
                     }
                 }
             }, 100); // Update every 100ms
@@ -69,55 +74,41 @@ function playResponseAudio(audioUrl) {
         });
 }
 
-// Function to get the volume for the current time based on points
-function getVolumeForCurrentTime(currentTime) {
-    const numPoints = volumePoints.length;
-
-    if (numPoints === 0) return 0; // If no points, return 0
-
-    // Calculate duration per point
-    const durationPerPoint = audioDuration / (numPoints - 1);
-
-    // Determine which segment the current time falls into
-    const pointIndex = Math.floor(currentTime / durationPerPoint);
-
-    // Ensure the point index is within bounds
-    if (pointIndex < 0) return volumePoints[0] ? volumePoints[0] / 100 : 0;
-    if (pointIndex >= numPoints - 1) return volumePoints[numPoints - 1] ? volumePoints[numPoints - 1] / 100 : 0;
-
-    // Linear interpolation between points
-    const t = (currentTime % durationPerPoint) / durationPerPoint;
-    const startVolume = volumePoints[pointIndex] || 0;
-    const endVolume = volumePoints[pointIndex + 1] || 0;
-
-    return ((1 - t) * startVolume + t * endVolume) / 100; // Return the interpolated volume factor scaled to 0-1
+// Function to precompute volume and pitch values based on drawn points
+function precomputeValues() {
+    volumeValues = computeInterpolatedValues(volumePoints, audioDuration);
+    pitchValues = computeInterpolatedValues(pitchPoints, audioDuration, true);
 }
 
-// Function to get the pitch for the current time based on points
-function getPitchForCurrentTime(currentTime) {
-    const numPoints = pitchPoints.length;
+// Function to compute interpolated values
+function computeInterpolatedValues(points, duration, isPitch = false) {
+    const values = [];
+    const numPoints = points.length;
 
-    if (numPoints === 0) return 1; // Default pitch (1.0 means original pitch)
+    if (numPoints === 0) return values;
 
     // Calculate duration per point
-    const durationPerPoint = audioDuration / (numPoints - 1);
+    const durationPerPoint = duration / (numPoints - 1);
 
-    // Determine which segment the current time falls into
-    const pointIndex = Math.floor(currentTime / durationPerPoint);
+    // Interpolating between each point
+    for (let i = 0; i < numPoints - 1; i++) {
+        const startValue = points[i] || (isPitch ? 50 : 0);
+        const endValue = points[i + 1] || (isPitch ? 50 : 0);
 
-    // Ensure the point index is within bounds
-    if (pointIndex < 0) return pitchPoints[0] ? pitchPoints[0] / 50 : 1; // Default to original pitch
-    if (pointIndex >= numPoints - 1) return pitchPoints[numPoints - 1] ? pitchPoints[numPoints - 1] / 50 : 1; // Last point
+        for (let j = 0; j < Math.ceil(durationPerPoint / 0.1); j++) { // Calculate for every 100ms
+            const t = j / Math.ceil(durationPerPoint / 0.1);
+            const interpolatedValue = ((1 - t) * startValue + t * endValue);
+            values.push(isPitch ? interpolatedValue / 50 : interpolatedValue / 100); // Scale for volume and pitch
+        }
+    }
 
-    // Linear interpolation between points
-    const t = (currentTime % durationPerPoint) / durationPerPoint;
-    const startPitch = pitchPoints[pointIndex] || 50; // Normalize to original pitch
-    const endPitch = pitchPoints[pointIndex + 1] || 50;
+    // Handle the last point
+    const lastPointValue = points[numPoints - 1] || (isPitch ? 50 : 0);
+    for (let j = 0; j < Math.ceil(durationPerPoint / 0.1); j++) { // Fill the rest of the array
+        values.push(isPitch ? lastPointValue / 50 : lastPointValue / 100);
+    }
 
-    // Normalize pitch values: Middle line is 50 (original pitch)
-    const interpolatedPitch = ((1 - t) * startPitch + t * endPitch) / 50; // Scale to a factor for playback rate
-
-    return interpolatedPitch; // Return pitch factor
+    return values;
 }
 
 // Add mouse event listeners for volume canvas
