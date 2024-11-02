@@ -22,8 +22,6 @@ pitchCanvas.width = pitchCanvas.offsetWidth;
 // Arrays to hold volume and pitch points
 let volumePoints = [];
 let pitchPoints = [];
-let volumeTimes = [];
-let pitchTimes = [];
 
 // Function to play audio response
 function playResponseAudio(audioUrl) {
@@ -32,7 +30,8 @@ function playResponseAudio(audioUrl) {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const gainNode = audioContext.createGain();
     const source = audioContext.createBufferSource();
-    
+    const playbackRateNode = audioContext.createGain(); // For pitch manipulation
+
     fetch(audioUrl)
         .then(response => response.arrayBuffer())
         .then(data => audioContext.decodeAudioData(data))
@@ -43,7 +42,7 @@ function playResponseAudio(audioUrl) {
             gainNode.connect(audioContext.destination);
             source.start(0);
 
-            // Update volume based on profiles every 100ms
+            // Update volume and pitch based on profiles every 100ms
             const updateAudioProfile = setInterval(() => {
                 const currentTime = audioContext.currentTime;
                 if (currentTime >= audioDuration) {
@@ -53,8 +52,13 @@ function playResponseAudio(audioUrl) {
                     // Interpolate volume based on the number of points
                     const volumeFactor = getVolumeForCurrentTime(currentTime);
                     if (volumeFactor !== undefined && isFinite(volumeFactor)) {
-                        console.log(volumeFactor)
                         gainNode.gain.setValueAtTime(volumeFactor, audioContext.currentTime); // Apply interpolated volume
+                    }
+
+                    // Interpolate pitch based on the number of points
+                    const pitchFactor = getPitchForCurrentTime(currentTime);
+                    if (pitchFactor !== undefined && isFinite(pitchFactor)) {
+                        source.playbackRate.setValueAtTime(pitchFactor, audioContext.currentTime); // Apply interpolated pitch
                     }
                 }
             }, 100); // Update every 100ms
@@ -69,9 +73,7 @@ function playResponseAudio(audioUrl) {
 // Function to get the volume for the current time based on points
 function getVolumeForCurrentTime(currentTime) {
     const numPoints = volumePoints.length;
-    console.log(numPoints)
-    console.log("points")
-    console.log(volumePoints)
+
     if (numPoints === 0) return 0; // If no points, return 0
 
     // Calculate duration per point
@@ -87,12 +89,31 @@ function getVolumeForCurrentTime(currentTime) {
     return volumePoints[pointIndex] / 100; // Return the volume factor scaled to 0-1
 }
 
+// Function to get the pitch for the current time based on points
+function getPitchForCurrentTime(currentTime) {
+    const numPoints = pitchPoints.length;
+
+    if (numPoints === 0) return 1; // Default pitch (1.0 means original pitch)
+
+    // Calculate duration per point
+    const durationPerPoint = audioDuration / numPoints;
+
+    // Determine which point corresponds to the current time
+    const pointIndex = Math.floor(currentTime / durationPerPoint);
+
+    // Ensure the point index is within bounds
+    if (pointIndex < 0) return pitchPoints[0] ? pitchPoints[0] / 100 : 1; // Default to original pitch
+    if (pointIndex >= numPoints) return pitchPoints[numPoints - 1] ? pitchPoints[numPoints - 1] / 100 : 1; // Last point
+
+    return pitchPoints[pointIndex] / 100; // Return pitch factor scaled to 0-1
+}
+
 // Add mouse event listeners for volume canvas
 volumeCanvas.addEventListener('mousedown', (e) => {
     const rect = volumeCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    addPoint(volumePoints, volumeTimes, x, y, volumeCanvas, audioDuration);
+    addPoint(volumePoints, x, y, volumeCanvas);
 });
 
 volumeCanvas.addEventListener('mousemove', (e) => {
@@ -100,7 +121,7 @@ volumeCanvas.addEventListener('mousemove', (e) => {
     const rect = volumeCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    addPoint(volumePoints, volumeTimes, x, y, volumeCanvas, audioDuration);
+    addPoint(volumePoints, x, y, volumeCanvas);
 });
 
 // Add mouse event listeners for pitch canvas
@@ -108,7 +129,7 @@ pitchCanvas.addEventListener('mousedown', (e) => {
     const rect = pitchCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    addPoint(pitchPoints, pitchTimes, x, y, pitchCanvas, audioDuration);
+    addPoint(pitchPoints, x, y, pitchCanvas);
 });
 
 pitchCanvas.addEventListener('mousemove', (e) => {
@@ -116,11 +137,11 @@ pitchCanvas.addEventListener('mousemove', (e) => {
     const rect = pitchCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    addPoint(pitchPoints, pitchTimes, x, y, pitchCanvas, audioDuration);
+    addPoint(pitchPoints, x, y, pitchCanvas);
 });
 
 // Function to add points to the profile and redraw
-function addPoint(points, times, x, y, canvas, audioDuration) {
+function addPoint(points, x, y, canvas) {
     const pointX = Math.floor((x / canvas.width) * 100); // Scale x to 100 points
     const pointY = Math.floor((1 - (y / canvas.height)) * 100); // Invert y and scale
 
