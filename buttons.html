@@ -56,6 +56,16 @@
             background-color: #ffc107; /* Change the color when active */
             color: #000;
         }
+
+        /* Canvas styling */
+        .canvas-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            cursor: crosshair;
+        }
     </style>
 </head>
 <body>
@@ -98,6 +108,14 @@
             <button id="exponentialPitchButton" class="btn btn-secondary mx-1">Exponential</button>
             <button id="sigmoidPitchButton" class="btn btn-success mx-1">Sigmoid</button>
             <button id="sinePitchButton" class="btn btn-warning mx-1">Sine Wave</button>
+        </div>
+
+        <!-- Canvas for drawing volume/pitch profiles -->
+        <div class="canvas-container">
+            <h4>Draw Volume Profile</h4>
+            <canvas id="volumeCanvas" width="600" height="200"></canvas>
+            <h4>Draw Pitch Profile</h4>
+            <canvas id="pitchCanvas" width="600" height="200"></canvas>
         </div>
 
         <!-- Display the response text -->
