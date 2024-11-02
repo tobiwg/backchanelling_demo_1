@@ -1,6 +1,5 @@
 let isPlaying = false;
-let selectedVolumeFunction = "linear"; // Default function for volume
-let selectedPitchFunction = "linear"; // Default function for pitch
+let audioDuration = 0; // Variable to hold audio duration
 const responses = {
     "Quick Tap Response": "sound/uh-huh.mp3",
     "Double-Tap Response": "sound/yeah.mp3",
@@ -16,13 +15,13 @@ const pitchCanvas = document.getElementById('pitchCanvas');
 const volumeCtx = volumeCanvas.getContext('2d');
 const pitchCtx = pitchCanvas.getContext('2d');
 
-let volumePoints = [];
-let pitchPoints = [];
-let audioDuration = 0; // Variable to hold audio duration
-
-// Set canvas width based on the parent element
+// Setting up canvas dimensions
 volumeCanvas.width = volumeCanvas.offsetWidth;
 pitchCanvas.width = pitchCanvas.offsetWidth;
+
+// Arrays to hold volume and pitch points
+let volumePoints = new Array(100).fill(0);
+let pitchPoints = new Array(100).fill(0);
 
 // Function to play audio response
 function playResponseAudio(audioUrl) {
@@ -116,14 +115,12 @@ function drawCanvas(points, canvas) {
 
 // Function to calculate volume factor from points
 function getVolumeFactor(points) {
-    // Normalize to [0, 1] based on the maximum point
     const maxVolume = Math.max(...points.filter(p => p !== undefined), 1);
     return Math.min(1, maxVolume / 100); // Return a value between 0 and 1
 }
 
 // Function to calculate pitch factor from points
 function getPitchFactor(points) {
-    // Normalize to [0, 1] based on the maximum point
     const maxPitch = Math.max(...points.filter(p => p !== undefined), 1);
     return Math.min(1, maxPitch / 100); // Return a value between 0 and 1
 }
@@ -151,12 +148,10 @@ $('.circle-btn').on('mouseup', function() {
 $('.btn-group > button').on('click', function() {
     $('.btn-group > button').removeClass('active-function'); // Remove active class from all buttons
     $(this).addClass('active-function'); // Add active class to the clicked button
-    selectedVolumeFunction = $(this).attr('id').replace('Button', '').toLowerCase(); // Set the selected function
 });
 
 // Button event listeners for pitch function selection
 $('.btn-group > button').on('click', function() {
     $('.btn-group > button').removeClass('active-function'); // Remove active class from all buttons
     $(this).addClass('active-function'); // Add active class to the clicked button
-    selectedPitchFunction = $(this).attr('id').replace('Button', '').toLowerCase(); // Set the selected function
 });
