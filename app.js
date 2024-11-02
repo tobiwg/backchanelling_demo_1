@@ -48,13 +48,13 @@ function playResponseAudio(audioUrl) {
                     clearInterval(updateAudioProfile);
                     isPlaying = false;
                 } else {
-                    // Interpolate volume based on the number of points
+                    // Apply interpolated volume
                     const volumeFactor = getVolumeForCurrentTime(currentTime);
                     if (volumeFactor !== undefined && isFinite(volumeFactor)) {
                         gainNode.gain.setValueAtTime(volumeFactor, audioContext.currentTime); // Apply interpolated volume
                     }
 
-                    // Interpolate pitch based on the number of points
+                    // Apply interpolated pitch
                     const pitchFactor = getPitchForCurrentTime(currentTime);
                     if (pitchFactor !== undefined && isFinite(pitchFactor)) {
                         source.playbackRate.setValueAtTime(pitchFactor, audioContext.currentTime); // Apply interpolated pitch
@@ -76,16 +76,21 @@ function getVolumeForCurrentTime(currentTime) {
     if (numPoints === 0) return 0; // If no points, return 0
 
     // Calculate duration per point
-    const durationPerPoint = audioDuration / numPoints;
+    const durationPerPoint = audioDuration / (numPoints - 1);
 
-    // Determine which point corresponds to the current time
+    // Determine which segment the current time falls into
     const pointIndex = Math.floor(currentTime / durationPerPoint);
 
     // Ensure the point index is within bounds
     if (pointIndex < 0) return volumePoints[0] ? volumePoints[0] / 100 : 0;
-    if (pointIndex >= numPoints) return volumePoints[numPoints - 1] ? volumePoints[numPoints - 1] / 100 : 0;
+    if (pointIndex >= numPoints - 1) return volumePoints[numPoints - 1] ? volumePoints[numPoints - 1] / 100 : 0;
 
-    return volumePoints[pointIndex] / 100; // Return the volume factor scaled to 0-1
+    // Linear interpolation between points
+    const t = (currentTime % durationPerPoint) / durationPerPoint;
+    const startVolume = volumePoints[pointIndex] || 0;
+    const endVolume = volumePoints[pointIndex + 1] || 0;
+
+    return ((1 - t) * startVolume + t * endVolume) / 100; // Return the interpolated volume factor scaled to 0-1
 }
 
 // Function to get the pitch for the current time based on points
@@ -95,22 +100,24 @@ function getPitchForCurrentTime(currentTime) {
     if (numPoints === 0) return 1; // Default pitch (1.0 means original pitch)
 
     // Calculate duration per point
-    const durationPerPoint = audioDuration / numPoints;
+    const durationPerPoint = audioDuration / (numPoints - 1);
 
-    // Determine which point corresponds to the current time
+    // Determine which segment the current time falls into
     const pointIndex = Math.floor(currentTime / durationPerPoint);
 
     // Ensure the point index is within bounds
-    if (pointIndex < 0) return pitchPoints[0] ? pitchPoints[0] / 100 : 1; // Default to original pitch
-    if (pointIndex >= numPoints) return pitchPoints[numPoints - 1] ? pitchPoints[numPoints - 1] / 100 : 1; // Last point
+    if (pointIndex < 0) return pitchPoints[0] ? pitchPoints[0] / 50 : 1; // Default to original pitch
+    if (pointIndex >= numPoints - 1) return pitchPoints[numPoints - 1] ? pitchPoints[numPoints - 1] / 50 : 1; // Last point
 
-    const pointY = pitchPoints[pointIndex];
+    // Linear interpolation between points
+    const t = (currentTime % durationPerPoint) / durationPerPoint;
+    const startPitch = pitchPoints[pointIndex] || 50; // Normalize to original pitch
+    const endPitch = pitchPoints[pointIndex + 1] || 50;
 
     // Normalize pitch values: Middle line is 50 (original pitch)
-    // Anything above is higher pitch and anything below is lower pitch
-    const normalizedPitch = (pointY / 50); // Scale to a factor for playback rate
+    const interpolatedPitch = ((1 - t) * startPitch + t * endPitch) / 50; // Scale to a factor for playback rate
 
-    return normalizedPitch; // Return pitch factor
+    return interpolatedPitch; // Return pitch factor
 }
 
 // Add mouse event listeners for volume canvas
@@ -194,19 +201,7 @@ $('.circle-btn').on('mousedown', function() {
 });
 
 $('.circle-btn').on('mouseup', function() {
-    $(this).removeClass('pressed'); // Remove pressed effect
     const responseText = $(this).data('response');
-    playResponseAudio(responses[responseText]); // Play audio for the selected response
-});
-
-// Button event listeners for volume function selection
-$('.btn-group > button').on('click', function() {
-    $('.btn-group > button').removeClass('active-function'); // Remove active class from all buttons
-    $(this).addClass('active-function'); // Add active class to the clicked button
-});
-
-// Button event listeners for pitch function selection
-$('.btn-group > button').on('click', function() {
-    $('.btn-group > button').removeClass('active-function'); // Remove active class from all buttons
-    $(this).addClass('active-function'); // Add active class to the clicked button
+    $(this).removeClass('pressed'); // Remove pressed effect
+    playResponseAudio(responses[responseText]); // Play audio response
 });
