@@ -50,8 +50,8 @@ function playResponseAudio(audioUrl) {
                     clearInterval(updateAudioProfile);
                     isPlaying = false;
                 } else {
-                    // Interpolate volume
-                    const volumeFactor = interpolateProfile(volumePoints, volumeTimes, currentTime);
+                    // Interpolate volume based on the number of points
+                    const volumeFactor = getVolumeForCurrentTime(currentTime);
                     if (volumeFactor !== undefined && isFinite(volumeFactor)) {
                         gainNode.gain.setValueAtTime(volumeFactor, audioContext.currentTime); // Apply interpolated volume
                     }
@@ -65,41 +65,23 @@ function playResponseAudio(audioUrl) {
         });
 }
 
-// Interpolate profile function
-function interpolateProfile(points, times, currentTime) {
-    if (points.length === 0) return 0; // If no points, return 0
+// Function to get the volume for the current time based on points
+function getVolumeForCurrentTime(currentTime) {
+    const numPoints = volumePoints.length;
 
-    // Normalize currentTime to a value between 0 and audioDuration
-    const normalizedTime = (currentTime / audioDuration) * 100; // Scale to 0-100
+    if (numPoints === 0) return 0; // If no points, return 0
 
-    // Find the index of the last point that is less than or equal to normalizedTime
-    let index = -1;
-    for (let i = 0; i < times.length; i++) {
-        if (times[i] <= normalizedTime) {
-            index = i;
-        } else {
-            break;
-        }
-    }
+    // Calculate duration per point
+    const durationPerPoint = audioDuration / numPoints;
 
-    // If no valid index, return the first point if available, else return 0
-    if (index < 0) return points[0] ? points[0] / 100 : 0;
+    // Determine which point corresponds to the current time
+    const pointIndex = Math.floor(currentTime / durationPerPoint);
 
-    // If we are at the last point or beyond, return the last point
-    if (index >= points.length - 1) return points[points.length - 1] / 100;
+    // Ensure the point index is within bounds
+    if (pointIndex < 0) return volumePoints[0] ? volumePoints[0] / 100 : 0;
+    if (pointIndex >= numPoints) return volumePoints[numPoints - 1] ? volumePoints[numPoints - 1] / 100 : 0;
 
-    // Interpolate between the two points
-    const nextIndex = index + 1;
-    const startValue = points[index] / 100; // Scale to 0-1
-    const endValue = points[nextIndex] / 100; // Scale to 0-1
-    const startTime = times[index];
-    const endTime = times[nextIndex];
-
-    const duration = endTime - startTime;
-    const position = normalizedTime - startTime;
-
-    // Linear interpolation
-    return startValue + (endValue - startValue) * (position / duration);
+    return volumePoints[pointIndex] / 100; // Return the volume factor scaled to 0-1
 }
 
 // Add mouse event listeners for volume canvas
@@ -138,12 +120,10 @@ pitchCanvas.addEventListener('mousemove', (e) => {
 function addPoint(points, times, x, y, canvas, audioDuration) {
     const pointX = Math.floor((x / canvas.width) * 100); // Scale x to 100 points
     const pointY = Math.floor((1 - (y / canvas.height)) * 100); // Invert y and scale
-    const currentTime = (pointX / 100) * audioDuration; // Map to audio time
 
     // Ensure we don't overwrite existing points on the same x value
-    if (pointX < 100 && (points[pointX] === undefined || times[pointX] === undefined)) {
+    if (pointX < 100 && (points[pointX] === undefined)) {
         points[pointX] = pointY; // Store point
-        times[pointX] = currentTime; // Store corresponding time
     }
 
     drawCanvas(points, canvas); // Draw the updated points
