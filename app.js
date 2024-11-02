@@ -53,6 +53,7 @@ function playResponseAudio(audioUrl) {
                     // Interpolate volume based on the number of points
                     const volumeFactor = getVolumeForCurrentTime(currentTime);
                     if (volumeFactor !== undefined && isFinite(volumeFactor)) {
+                        console.log(volumeFactor)
                         gainNode.gain.setValueAtTime(volumeFactor, audioContext.currentTime); // Apply interpolated volume
                     }
                 }
