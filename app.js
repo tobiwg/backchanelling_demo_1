@@ -30,7 +30,6 @@ function playResponseAudio(audioUrl) {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const gainNode = audioContext.createGain();
     const source = audioContext.createBufferSource();
-    const playbackRateNode = audioContext.createGain(); // For pitch manipulation
 
     fetch(audioUrl)
         .then(response => response.arrayBuffer())
@@ -105,7 +104,13 @@ function getPitchForCurrentTime(currentTime) {
     if (pointIndex < 0) return pitchPoints[0] ? pitchPoints[0] / 100 : 1; // Default to original pitch
     if (pointIndex >= numPoints) return pitchPoints[numPoints - 1] ? pitchPoints[numPoints - 1] / 100 : 1; // Last point
 
-    return pitchPoints[pointIndex] / 100; // Return pitch factor scaled to 0-1
+    const pointY = pitchPoints[pointIndex];
+
+    // Normalize pitch values: Middle line is 50 (original pitch)
+    // Anything above is higher pitch and anything below is lower pitch
+    const normalizedPitch = (pointY / 50); // Scale to a factor for playback rate
+
+    return normalizedPitch; // Return pitch factor
 }
 
 // Add mouse event listeners for volume canvas
@@ -157,6 +162,15 @@ function addPoint(points, x, y, canvas) {
 function drawCanvas(points, canvas) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+    // Draw the middle line
+    const middleY = canvas.height / 2;
+    ctx.beginPath();
+    ctx.moveTo(0, middleY);
+    ctx.lineTo(canvas.width, middleY);
+    ctx.strokeStyle = "red"; // Color for middle line
+    ctx.stroke();
+
     ctx.beginPath();
     ctx.moveTo(0, canvas.height); // Start from the bottom left
 
