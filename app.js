@@ -243,43 +243,51 @@ function precomputeValues() {
 // Event listeners for predefined profile buttons
 document.getElementById('linearVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
-    profileVolume="linear"
+    volumeValues = predefinedProfile("linear", audioDuration);
+    profileVolume = "linear";
     updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 document.getElementById('exponentialVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
-    profileVolume="exponential"
+    volumeValues = predefinedProfile("exponential", audioDuration);
+    profileVolume = "exponential";
     updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 document.getElementById('sigmoidVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
-    profileVolume= "sigmoid"
+    volumeValues = predefinedProfile("sigmoid", audioDuration);
+    profileVolume = "sigmoid";
     updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 document.getElementById('sineVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
-    profileVolume="sine";
+    volumeValues = predefinedProfile("sine", audioDuration);
+    profileVolume = "sine";
     updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 
 document.getElementById('linearPitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
+    pitchValues = predefinedProfile("linear", audioDuration);
     profilePitch = "linear"
     updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 document.getElementById('exponentialPitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
-    profilePitch="exponential"
+    pitchValues = predefinedProfile("exponential", audioDuration);
+    profilePitch = "exponential"
     updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 document.getElementById('sigmoidPitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
-    profilePitch="sigmoid"
+    pitchValues = predefinedProfile("sigmoid", audioDuration);
+    profilePitch = "sigmoid"
     updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 document.getElementById('sinePitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
-   profilePitch="sine"
+    pitchValues = predefinedProfile("sine", audioDuration);
+    profilePitch = "sine"
     updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 
