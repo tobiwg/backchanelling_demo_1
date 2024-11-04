@@ -47,16 +47,16 @@ function updateCanvas(canvas, ctx, points) {
 }
 
 
-// Add mouse event listeners for volume canvas
-volumeCanvas.addEventListener('mousedown', (e) => {
+// Add pointer event listeners for volume canvas
+volumeCanvas.addEventListener('pointerdown', (e) => {
     const rect = volumeCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     addPoint(volumePoints, x, y, volumeCanvas);
 });
 
-volumeCanvas.addEventListener('mousemove', (e) => {
-    if (e.buttons !== 1) return; // Only draw when mouse is down
+volumeCanvas.addEventListener('pointermove', (e) => {
+    if (e.buttons !== 1) return; // Only draw when pointer is down
     const rect = volumeCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -65,8 +65,8 @@ volumeCanvas.addEventListener('mousemove', (e) => {
     useDrawnVolume = true;
 });
 
-// Add mouse event listeners for pitch canvas
-pitchCanvas.addEventListener('mousedown', (e) => {
+// Add pointer event listeners for pitch canvas
+pitchCanvas.addEventListener('pointerdown', (e) => {
     const rect = pitchCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -74,8 +74,8 @@ pitchCanvas.addEventListener('mousedown', (e) => {
    
 });
 
-pitchCanvas.addEventListener('mousemove', (e) => {
-    if (e.buttons !== 1) return; // Only draw when mouse is down
+pitchCanvas.addEventListener('pointermove', (e) => {
+    if (e.buttons !== 1) return; // Only draw when pointer is down
     const rect = pitchCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
