@@ -61,6 +61,8 @@ volumeCanvas.addEventListener('mousemove', (e) => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     addPoint(volumePoints, x, y, volumeCanvas);
+    clearVolume = false;
+    useDrawnVolume = true;
 });
 
 // Add mouse event listeners for pitch canvas
@@ -69,7 +71,7 @@ pitchCanvas.addEventListener('mousedown', (e) => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     addPoint(pitchPoints, x, y, pitchCanvas);
-    useDrawnVolume = true;
+   
 });
 
 pitchCanvas.addEventListener('mousemove', (e) => {
@@ -79,6 +81,7 @@ pitchCanvas.addEventListener('mousemove', (e) => {
     const y = e.clientY - rect.top;
     addPoint(pitchPoints, x, y, pitchCanvas);
     useDrawnPitch = true;
+    clearPitch = false;
 });
 
 // Function to add points to the profile and redraw
@@ -249,24 +252,28 @@ document.getElementById('linearVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
     volumeValues = predefinedProfile("linear", audioDuration);
     profileVolume = "linear";
+    clearVolume =false;
     updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 document.getElementById('exponentialVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
     volumeValues = predefinedProfile("exponential", audioDuration);
     profileVolume = "exponential";
+    clearVolume =false;
     updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 document.getElementById('sigmoidVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
     volumeValues = predefinedProfile("sigmoid", audioDuration);
     profileVolume = "sigmoid";
+    clearVolume =false;
     updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 document.getElementById('sineVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
     volumeValues = predefinedProfile("sine", audioDuration);
     profileVolume = "sine";
+    clearVolume =false;
     updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 
@@ -274,24 +281,28 @@ document.getElementById('linearPitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
     pitchValues = predefinedProfile("linear", audioDuration);
     profilePitch = "linear"
+    clearPitch = false;
     updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 document.getElementById('exponentialPitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
     pitchValues = predefinedProfile("exponential", audioDuration);
     profilePitch = "exponential"
+    clearPitch = false;
     updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 document.getElementById('sigmoidPitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
     pitchValues = predefinedProfile("sigmoid", audioDuration);
     profilePitch = "sigmoid"
+    clearPitch = false;
     updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 document.getElementById('sinePitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
     pitchValues = predefinedProfile("sine", audioDuration);
     profilePitch = "sine"
+    clearPitch = false;
     updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 
