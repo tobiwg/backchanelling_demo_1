@@ -181,19 +181,19 @@ function predefinedProfile(type, duration) {
         let value;
         switch (type) {
             case "linear":
-                value = 1-t;
+                value = t;
                 break;
             case "exponential":
-                value = 1-Math.pow(t, 2);
+                value = Math.pow(t, 2);
                 break;
             case "sigmoid":
-                value = 1-1 / (1 + Math.exp(-10 * (t - 0.5)));
+                value = 1 / (1 + Math.exp(-10 * (t - 0.5)));
                 break;
             case "sine":
-                value = 1-0.5 + 0.5 * Math.sin(2 * Math.PI * t - Math.PI / 2);
+                value = 0.5 + 0.5 * Math.sin(2 * Math.PI * t - Math.PI / 2);
                 break;
             default:
-                value = 1;
+                value = t;
         }
         values.push(value);
     }
@@ -233,8 +233,8 @@ function playResponseAudio(audioUrl) {
                     }
                     if (currentTime < pitchValues.length && !clearPitch) {
                         console.log(profilePitch)
-                        console.log(pitchValues)
-                        source.playbackRate.linearRampToValueAtTime(pitchValues[Math.floor(currentTime * 100)], audioContext.currentTime);
+                        console.log(1-pitchValues)
+                        source.playbackRate.linearRampToValueAtTime(1-pitchValues[Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
                 }
             }, 50);
