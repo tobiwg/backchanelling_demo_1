@@ -237,7 +237,7 @@ function playResponseAudio(audioUrl) {
 function precomputeValues() {
 
     volumeValues = useDrawnVolume ? computeInterpolatedValues(volumePoints, audioDuration) : computeInterpolatedValues(predefinedProfile(profileVolume, audioDuration), audioDuration);
-    pitchValues = useDrawnPitch ? computeInterpolatedValues(pitchPoints, audioDuration, true) : computeInterpolatedValues(predefinedProfile(profilePitch, audioDuration), audioDuration, true);
+    pitchValues = useDrawnPitch ? computeInterpolatedValues(pitchPoints, audioDuration) : computeInterpolatedValues(predefinedProfile(profilePitch, audioDuration), audioDuration);
 }
 
 // Event listeners for predefined profile buttons
