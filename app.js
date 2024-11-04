@@ -225,7 +225,7 @@ function playResponseAudio(audioUrl) {
                         source.playbackRate.setValueAtTime(pitchValues[Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
                 }
-            }, 10);
+            }, 50);
 
             source.onended = () => {
                 isPlaying = false;
