@@ -160,14 +160,15 @@ function computeInterpolatedValues(points, duration, isPitch = false) {
         for (let j = 0; j < Math.ceil(durationPerPoint / 0.1); j++) { // Calculate for every 100ms
             const t = j / Math.ceil(durationPerPoint / 0.1);
             const interpolatedValue = ((1 - t) * startValue + t * endValue);
-            values.push(isPitch ? interpolatedValue / 50 : interpolatedValue / 100); // Scale for volume and pitch
+           
+            values.push(isPitch ? 1-interpolatedValue / 50 : 1-interpolatedValue / 100); // Scale for volume and pitch
         }
     }
 
     // Handle the last point
     const lastPointValue = points[numPoints - 1] || (isPitch ? 50 : 0);
     for (let j = 0; j < Math.ceil(durationPerPoint / 0.1); j++) { // Fill the rest of the array
-        values.push(isPitch ? lastPointValue / 50 : lastPointValue / 100);
+        values.push(isPitch ? 1-lastPointValue / 50 : 1-lastPointValue / 100);
     }
 
     return values;
@@ -180,19 +181,19 @@ function predefinedProfile(type, duration) {
         let value;
         switch (type) {
             case "linear":
-                value = t;
+                value = 1-t;
                 break;
             case "exponential":
-                value = Math.pow(t, 2);
+                value = 1-Math.pow(t, 2);
                 break;
             case "sigmoid":
-                value = 1 / (1 + Math.exp(-10 * (t - 0.5)));
+                value = 1-1 / (1 + Math.exp(-10 * (t - 0.5)));
                 break;
             case "sine":
-                value = 0.5 + 0.5 * Math.sin(2 * Math.PI * t - Math.PI / 2);
+                value = 1-0.5 + 0.5 * Math.sin(2 * Math.PI * t - Math.PI / 2);
                 break;
             default:
-                value = t;
+                value = 1;
         }
         values.push(value);
     }
@@ -228,12 +229,12 @@ function playResponseAudio(audioUrl) {
                     if (currentTime < volumeValues.length && !clearVolume ) {
                         console.log(profileVolume)
                         console.log(volumeValues)
-                        gainNode.gain.linearRampToValueAtTime(volumeValues[1-Math.floor(currentTime * 100)], audioContext.currentTime);
+                        gainNode.gain.linearRampToValueAtTime(volumeValues[Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
                     if (currentTime < pitchValues.length && !clearPitch) {
                         console.log(profilePitch)
                         console.log(pitchValues)
-                        source.playbackRate.linearRampToValueAtTime(1-pitchValues[Math.floor(currentTime * 100)], audioContext.currentTime);
+                        source.playbackRate.linearRampToValueAtTime(pitchValues[Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
                 }
             }, 50);
