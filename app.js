@@ -228,12 +228,12 @@ function playResponseAudio(audioUrl) {
                     if (currentTime < volumeValues.length && !clearVolume ) {
                         console.log(profileVolume)
                         console.log(volumeValues)
-                        gainNode.gain.linearRampToValueAtTime(volumeValues[Math.floor(currentTime * 100)], audioContext.currentTime);
+                        gainNode.gain.linearRampToValueAtTime(volumeValues[1-Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
                     if (currentTime < pitchValues.length && !clearPitch) {
-                        console.log(profileVolume)
+                        console.log(profilePitch)
                         console.log(pitchValues)
-                        source.playbackRate.linearRampToValueAtTime(pitchValues[Math.floor(currentTime * 100)], audioContext.currentTime);
+                        source.playbackRate.linearRampToValueAtTime(1-pitchValues[Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
                 }
             }, 50);
