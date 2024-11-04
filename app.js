@@ -219,10 +219,10 @@ function playResponseAudio(audioUrl) {
                     isPlaying = false;
                 } else {
                     if (currentTime < volumeValues.length) {
-                        gainNode.gain.setValueAtTime(volumeValues[Math.floor(currentTime * 100)], audioContext.currentTime);
+                        gainNode.gain.linearRampToValueAtTime(volumeValues[Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
                     if (currentTime < pitchValues.length) {
-                        source.playbackRate.setValueAtTime(pitchValues[Math.floor(currentTime * 100)], audioContext.currentTime);
+                        source.playbackRate.linearRampToValueAtTime(pitchValues[Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
                 }
             }, 50);
