@@ -43,24 +43,79 @@ function updateCanvas(canvas, ctx, points) {
     ctx.stroke();
 }
 
-// Event listeners to capture points on the canvas
-function addCanvasListeners(canvas, points, ctx) {
-    let isDrawing = false;
-    canvas.addEventListener("mousedown", () => isDrawing = true);
-    canvas.addEventListener("mouseup", () => isDrawing = false);
-    canvas.addEventListener("mousemove", (e) => {
-        if (isDrawing) {
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / canvas.width;
-            const y = 1 - (e.clientY - rect.top) / canvas.height;
-            points.push({ x, y });
-            updateCanvas(canvas, ctx, points);
-        }
-    });
+
+// Add mouse event listeners for volume canvas
+volumeCanvas.addEventListener('mousedown', (e) => {
+    const rect = volumeCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    addPoint(volumePoints, x, y, volumeCanvas);
+});
+
+volumeCanvas.addEventListener('mousemove', (e) => {
+    if (e.buttons !== 1) return; // Only draw when mouse is down
+    const rect = volumeCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    addPoint(volumePoints, x, y, volumeCanvas);
+});
+
+// Add mouse event listeners for pitch canvas
+pitchCanvas.addEventListener('mousedown', (e) => {
+    const rect = pitchCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    addPoint(pitchPoints, x, y, pitchCanvas);
+});
+
+pitchCanvas.addEventListener('mousemove', (e) => {
+    if (e.buttons !== 1) return; // Only draw when mouse is down
+    const rect = pitchCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    addPoint(pitchPoints, x, y, pitchCanvas);
+});
+
+// Function to add points to the profile and redraw
+function addPoint(points, x, y, canvas) {
+    const pointX = Math.floor((x / canvas.width) * 100); // Scale x to 100 points
+    const pointY = Math.floor((1 - (y / canvas.height)) * 100); // Invert y and scale
+
+    // Ensure we don't overwrite existing points on the same x value
+    if (pointX < 100 && (points[pointX] === undefined)) {
+        points[pointX] = pointY; // Store point
+    }
+
+    drawCanvas(points, canvas); // Draw the updated points
 }
 
-addCanvasListeners(volumeCanvas, volumePoints, volumeCtx);
-addCanvasListeners(pitchCanvas, pitchPoints, pitchCtx);
+// Function to draw the current points on the canvas
+function drawCanvas(points, canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+    // Draw the middle line
+    const middleY = canvas.height / 2;
+    ctx.beginPath();
+    ctx.moveTo(0, middleY);
+    ctx.lineTo(canvas.width, middleY);
+    ctx.strokeStyle = "red"; // Color for middle line
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height); // Start from the bottom left
+
+    for (let i = 0; i < points.length; i++) {
+        if (points[i] !== undefined) {
+            ctx.lineTo(i * (canvas.width / 100), canvas.height - (points[i] / 100) * canvas.height);
+        }
+    }
+
+    ctx.lineTo(canvas.width, canvas.height); // Close the path
+    ctx.fillStyle = "rgba(0, 0, 255, 0.5)"; // Fill with a color
+    ctx.fill();
+    ctx.stroke();
+}
 // Clear button functionality for both volume and pitch canvases
 document.getElementById('clearVolumeButton').addEventListener('click', () => {
     volumePoints = [];
