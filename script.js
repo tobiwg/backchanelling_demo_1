@@ -47,7 +47,7 @@ function triggerResponse(responseText) {
 }
 
 // Touch event listeners
-touchArea.addEventListener('touchstart', (e) => {
+touchArea.addEventListener('pointerstart', (e) => {
     touchStartTime = Date.now();
     responseDisplay.textContent = "Response: None";
 
@@ -59,7 +59,7 @@ touchArea.addEventListener('touchstart', (e) => {
     }, 600); // 600ms for holding response
 });
 
-touchArea.addEventListener('touchend', (e) => {
+touchArea.addEventListener('pointerend', (e) => {
     clearTimeout(holdTimer); // Stop hold timer if touch ends early
 
     const touchDuration = Date.now() - touchStartTime;
@@ -82,7 +82,7 @@ touchArea.addEventListener('touchend', (e) => {
     }
 });
 
-touchArea.addEventListener('touchmove', (e) => {
+touchArea.addEventListener('pointermove', (e) => {
     const touch = e.touches[0];
     // Prevent triggering audio on touchmove
     if (!isPlaying) { // Only trigger if no audio is playing

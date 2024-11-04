@@ -193,7 +193,7 @@ function predefinedProfile(type, duration) {
                 value = 0.5 + 0.5 * Math.sin(2 * Math.PI * t - Math.PI / 2);
                 break;
             default:
-                value = t;
+                value = 1;
         }
         values.push(value);
     }
