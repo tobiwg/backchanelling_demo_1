@@ -1,10 +1,20 @@
+// Canvas and playback variables
 let isPlaying = false;
-let audioDuration = 0;
+let audioDuration = 2; // Default duration, will update based on audio
 let volumeValues = [];
 let pitchValues = [];
 let useDrawnVolume = false;
 let useDrawnPitch = false;
 
+const volumeCanvas = document.getElementById('volumeCanvas');
+const pitchCanvas = document.getElementById('pitchCanvas');
+const volumeCtx = volumeCanvas.getContext('2d');
+const pitchCtx = pitchCanvas.getContext('2d');
+
+let volumePoints = [];
+let pitchPoints = [];
+
+// Sample audio responses
 const responses = {
     "Quick Tap Response": "sound/uh-huh.mp3",
     "Double-Tap Response": "sound/yeah.mp3",
@@ -14,13 +24,90 @@ const responses = {
     "Holding Response": "sound/totally agree.mp3"
 };
 
-const volumeCanvas = document.getElementById('volumeCanvas');
-const pitchCanvas = document.getElementById('pitchCanvas');
-const volumeCtx = volumeCanvas.getContext('2d');
-const pitchCtx = pitchCanvas.getContext('2d');
+// Predefined curve types
+const volumeProfiles = ["linear", "exponential", "sigmoid", "sine"];
+const pitchProfiles = ["linear", "exponential", "sigmoid", "sine"];
 
-let volumePoints = [];
-let pitchPoints = [];
+// Function to draw on the canvas (clears old points first)
+function updateCanvas(canvas, ctx, points) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    points.forEach((point, index) => {
+        const x = point.x * canvas.width;
+        const y = point.y * canvas.height;
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = "blue";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+
+// Event listeners to capture points on the canvas
+function addCanvasListeners(canvas, points, ctx) {
+    let isDrawing = false;
+    canvas.addEventListener("mousedown", () => isDrawing = true);
+    canvas.addEventListener("mouseup", () => isDrawing = false);
+    canvas.addEventListener("mousemove", (e) => {
+        if (isDrawing) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / canvas.width;
+            const y = 1 - (e.clientY - rect.top) / canvas.height;
+            points.push({ x, y });
+            updateCanvas(canvas, ctx, points);
+        }
+    });
+}
+
+addCanvasListeners(volumeCanvas, volumePoints, volumeCtx);
+addCanvasListeners(pitchCanvas, pitchPoints, pitchCtx);
+
+function computeInterpolatedValues(points, duration) {
+    const values = [];
+    for (let i = 0; i < duration * 100; i++) {
+        const t = i / (duration * 100 - 1);
+        let value = 0;
+        if (points.length > 1) {
+            for (let j = 1; j < points.length; j++) {
+                const p0 = points[j - 1];
+                const p1 = points[j];
+                if (t >= p0.x && t <= p1.x) {
+                    const fraction = (t - p0.x) / (p1.x - p0.x);
+                    value = p0.y * (1 - fraction) + p1.y * fraction;
+                    break;
+                }
+            }
+        }
+        values.push(value);
+    }
+    return values;
+}
+
+function predefinedProfile(type, duration) {
+    const values = [];
+    for (let i = 0; i < duration * 100; i++) {
+        const t = i / (duration * 100 - 1);
+        let value;
+        switch (type) {
+            case "linear":
+                value = t;
+                break;
+            case "exponential":
+                value = Math.pow(t, 2);
+                break;
+            case "sigmoid":
+                value = 1 / (1 + Math.exp(-10 * (t - 0.5)));
+                break;
+            case "sine":
+                value = 0.5 + 0.5 * Math.sin(2 * Math.PI * t - Math.PI / 2);
+                break;
+            default:
+                value = t;
+        }
+        values.push(value);
+    }
+    return values;
+}
 
 function playResponseAudio(audioUrl) {
     if (isPlaying) return;
@@ -49,12 +136,10 @@ function playResponseAudio(audioUrl) {
                     isPlaying = false;
                 } else {
                     if (currentTime < volumeValues.length) {
-                        const volumeFactor = volumeValues[Math.floor(currentTime)];
-                        gainNode.gain.setValueAtTime(volumeFactor, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(volumeValues[Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
                     if (currentTime < pitchValues.length) {
-                        const pitchFactor = pitchValues[Math.floor(currentTime)];
-                        source.playbackRate.setValueAtTime(pitchFactor, audioContext.currentTime);
+                        source.playbackRate.setValueAtTime(pitchValues[Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
                 }
             }, 10);
@@ -67,86 +152,51 @@ function playResponseAudio(audioUrl) {
 }
 
 function precomputeValues() {
-    if (useDrawnVolume) {
-        volumeValues = computeInterpolatedValues(volumePoints, audioDuration);
-    } else {
-        volumeValues = predefinedProfile("linear");
-    }
-
-    if (useDrawnPitch) {
-        pitchValues = computeInterpolatedValues(pitchPoints, audioDuration, true);
-    } else {
-        pitchValues = predefinedProfile("linear", true);
-    }
+    volumeValues = useDrawnVolume ? computeInterpolatedValues(volumePoints, audioDuration) : predefinedProfile("linear", audioDuration);
+    pitchValues = useDrawnPitch ? computeInterpolatedValues(pitchPoints, audioDuration) : predefinedProfile("linear", audioDuration);
 }
 
-function computeInterpolatedValues(points, duration, isPitch = false) {
-    const values = [];
-    // Simplified for clarity. Add your interpolation logic here.
-    return values;
-}
-
-function predefinedProfile(type, isPitch = false) {
-    const values = [];
-    const numValues = Math.ceil(audioDuration * 10);
-    let startValue = isPitch ? 1 : 0.5;
-
-    for (let i = 0; i < numValues; i++) {
-        const t = i / numValues;
-        let value;
-        switch (type) {
-            case "linear":
-                value = startValue + t * (isPitch ? 0.5 : 0.5);
-                break;
-            case "exponential":
-                value = startValue * Math.pow(2, t);
-                break;
-            case "sigmoid":
-                value = startValue / (1 + Math.exp(-10 * (t - 0.5)));
-                break;
-            case "sine":
-                value = startValue + 0.5 * Math.sin(2 * Math.PI * t);
-                break;
-            default:
-                value = startValue;
-        }
-        values.push(value);
-    }
-    return values;
-}
-
+// Event listeners for predefined profile buttons
 document.getElementById('linearVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
-    volumeValues = predefinedProfile("linear");
+    volumeValues = predefinedProfile("linear", audioDuration);
+    updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 document.getElementById('exponentialVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
-    volumeValues = predefinedProfile("exponential");
+    volumeValues = predefinedProfile("exponential", audioDuration);
+    updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 document.getElementById('sigmoidVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
-    volumeValues = predefinedProfile("sigmoid");
+    volumeValues = predefinedProfile("sigmoid", audioDuration);
+    updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 document.getElementById('sineVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
-    volumeValues = predefinedProfile("sine");
+    volumeValues = predefinedProfile("sine", audioDuration);
+    updateCanvas(volumeCanvas, volumeCtx, volumeValues.map((y, x) => ({ x: x / volumeValues.length, y })));
 });
 
 document.getElementById('linearPitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
-    pitchValues = predefinedProfile("linear", true);
+    pitchValues = predefinedProfile("linear", audioDuration);
+    updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 document.getElementById('exponentialPitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
-    pitchValues = predefinedProfile("exponential", true);
+    pitchValues = predefinedProfile("exponential", audioDuration);
+    updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 document.getElementById('sigmoidPitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
-    pitchValues = predefinedProfile("sigmoid", true);
+    pitchValues = predefinedProfile("sigmoid", audioDuration);
+    updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 document.getElementById('sinePitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
-    pitchValues = predefinedProfile("sine", true);
+    pitchValues = predefinedProfile("sine", audioDuration);
+    updateCanvas(pitchCanvas, pitchCtx, pitchValues.map((y, x) => ({ x: x / pitchValues.length, y })));
 });
 
 $('.circle-btn').click(function() {
