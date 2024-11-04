@@ -7,7 +7,8 @@ let useDrawnVolume = false;
 let useDrawnPitch = false;
 let profileVolume = "linear"
 let profilePitch = "linear"
-
+let clearVolume = true;
+let clearPitch =true;
 const volumeCanvas = document.getElementById('volumeCanvas');
 const pitchCanvas = document.getElementById('pitchCanvas');
 const volumeCtx = volumeCanvas.getContext('2d');
@@ -126,6 +127,8 @@ document.getElementById('clearVolumeButton').addEventListener('click', () => {
     useDrawnVolume = false;
     updateCanvas(volumeCanvas, volumeCtx, volumePoints);
     useDrawnVolume = false; // Reset to use predefined if not redrawn
+    clearVolume = true;
+clearPitch =true;
 });
 
 document.getElementById('clearPitchButton').addEventListener('click', () => {
@@ -133,6 +136,7 @@ document.getElementById('clearPitchButton').addEventListener('click', () => {
     useDrawnPitch = false;
     updateCanvas(pitchCanvas, pitchCtx, pitchPoints);
     useDrawnPitch = false; // Reset to use predefined if not redrawn
+    clearPitch =true;
 });
 
 // Function to compute interpolated values
@@ -218,10 +222,10 @@ function playResponseAudio(audioUrl) {
                     clearInterval(updateAudioProfile);
                     isPlaying = false;
                 } else {
-                    if (currentTime < volumeValues.length) {
+                    if (currentTime < volumeValues.length && !clearVolume ) {
                         gainNode.gain.linearRampToValueAtTime(volumeValues[Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
-                    if (currentTime < pitchValues.length) {
+                    if (currentTime < pitchValues.length && !clearPitch) {
                         source.playbackRate.linearRampToValueAtTime(pitchValues[Math.floor(currentTime * 100)], audioContext.currentTime);
                     }
                 }
