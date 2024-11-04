@@ -61,6 +61,18 @@ function addCanvasListeners(canvas, points, ctx) {
 
 addCanvasListeners(volumeCanvas, volumePoints, volumeCtx);
 addCanvasListeners(pitchCanvas, pitchPoints, pitchCtx);
+// Clear button functionality for both volume and pitch canvases
+document.getElementById('clearVolumeButton').addEventListener('click', () => {
+    volumePoints = [];
+    updateCanvas(volumeCanvas, volumeCtx, volumePoints);
+    useDrawnVolume = false; // Reset to use predefined if not redrawn
+});
+
+document.getElementById('clearPitchButton').addEventListener('click', () => {
+    pitchPoints = [];
+    updateCanvas(pitchCanvas, pitchCtx, pitchPoints);
+    useDrawnPitch = false; // Reset to use predefined if not redrawn
+});
 
 function computeInterpolatedValues(points, duration) {
     const values = [];

@@ -76,11 +76,18 @@
         </div>
 
         <div id="responseDisplay">Response: None</div>
-
         <h4 class="text-center">Volume Control Profile</h4>
         <canvas id="volumeCanvas"></canvas>
+        <div class="text-center" style="margin-top: 10px;">
+            <button class="btn btn-danger" id="clearVolumeButton">Clear Volume Drawing</button>
+        </div>
+        
         <h4 class="text-center">Pitch Control Profile</h4>
         <canvas id="pitchCanvas"></canvas>
+        <div class="text-center" style="margin-top: 10px;">
+            <button class="btn btn-danger" id="clearPitchButton">Clear Pitch Drawing</button>
+        </div>
+        
 
         <div class="btn-group text-center" style="margin-top: 20px;">
             <button class="btn btn-primary" id="linearVolumeButton">Linear Volume</button>
@@ -94,7 +101,8 @@
             <button class="btn btn-warning" id="sigmoidPitchButton">Sigmoid Pitch</button>
             <button class="btn btn-info" id="sinePitchButton">Sine Pitch</button>
         </div>
-    </div>
+    </div>]
+    
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
