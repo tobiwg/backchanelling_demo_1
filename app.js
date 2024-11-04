@@ -65,7 +65,7 @@ function playResponseAudio(audioUrl) {
                         source.playbackRate.setValueAtTime(pitchFactor, audioContext.currentTime);
                     }
                 }
-            }, 100); // Update every 100ms
+            }, 10); // Update every 100ms
 
             source.onended = () => {
                 isPlaying = false;
